@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QHBoxLayout, QToolButton, QWidget
 from PySide6.QtCore import Qt
 
 
-FOODS = ("🐟", "🍰", "🍭", "🍡", "💎")
+FOODS = ("小鱼", "虾", "贝", "海藻", "点心")
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,33 +89,34 @@ class FoodPanel(QWidget):
         )
         self.setObjectName("foodPanel")
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setFixedSize(310, 64)
+        self.setFixedSize(336, 66)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(12, 8, 12, 8)
-        layout.setSpacing(8)
+        layout.setSpacing(6)
         for food in FOODS:
             button = QToolButton()
             button.setText(food)
-            button.setFont(QFont("Segoe UI Emoji", 20))
-            button.setFixedSize(44, 44)
+            button.setFont(QFont("Microsoft YaHei UI", 10))
+            button.setFixedSize(49, 44)
             button.setStyleSheet(
-                "QToolButton{background:rgba(255,255,255,235);border:2px solid #ffb3c8;"
-                "border-radius:22px;} QToolButton:hover{background:#ffe3ec;border-color:#ff7fa8;}"
+                "QToolButton{background:rgba(240,249,255,242);border:none;"
+                "border-radius:10px;color:#153a59;font-weight:600;}"
+                "QToolButton:hover{background:#ffffff;color:#0b5f92;}"
             )
             button.clicked.connect(lambda _, value=food: on_pick(value))
             layout.addWidget(button)
         close = QToolButton()
-        close.setText("✕")
+        close.setText("关闭")
         close.setFont(QFont("Microsoft YaHei UI", 12))
-        close.setFixedSize(26, 26)
+        close.setFixedSize(34, 28)
         close.setStyleSheet(
-            "QToolButton{background:rgba(255,255,255,200);border:none;border-radius:13px;color:#666;}"
-            "QToolButton:hover{background:#ff7fa8;color:#fff;}"
+            "QToolButton{background:rgba(255,255,255,36);border:none;border-radius:8px;color:#cae2f0;}"
+            "QToolButton:hover{background:rgba(255,255,255,75);color:#fff;}"
         )
         close.clicked.connect(self.hide)
         layout.addWidget(close)
         self.setStyleSheet(
-            "#foodPanel{background:rgba(40,40,60,190);border-radius:14px;}"
+            "#foodPanel{background:rgba(10,43,70,235);border-radius:14px;}"
         )
 
     def popup_at(self, x: float, y: float) -> None:

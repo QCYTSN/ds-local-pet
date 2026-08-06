@@ -1,0 +1,27 @@
+{
+  "candidate": "candidate_b_core",
+  "source_sheet": "assets\\candidates\\state_actions\\candidate_b_core\\source_sheet.png",
+  "grid": "2x2",
+  "poses": [
+    "happy",
+    "poke_react",
+    "talk",
+    "eat"
+  ],
+  "frames": [
+    "happy.png",
+    "poke_react.png",
+    "talk.png",
+    "eat.png"
+  ],
+  "preview": "assets\\previews\\gifs\\state_actions_candidate_b_core_4poses.gif",
+  "review_only": false,
+  "formal_runtime": true,
+  "approved_by_user": true,
+  "generated_at_runtime": false,
+  "notes": [
+    "Generated key-pose sheet extracted from a uniform chroma-key background.",
+    "The sheet was generated on #00FF00 and only that background was keyed to alpha.",
+    "No original asset was replaced, renamed, cropped, or reconstructed."
+  ]
+}

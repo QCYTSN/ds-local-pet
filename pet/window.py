@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 
 from PySide6.QtCore import QPoint, QTimer, Qt
-from PySide6.QtGui import QIcon, QPixmap
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QMenu,
@@ -21,6 +21,10 @@ from PySide6.QtWidgets import (
 from app.paths import AppPaths
 from awareness.privacy import PrivacyPolicy
 from awareness.sensor import ContextSensor
+from animation.asset_registry import AssetRegistry
+from animation.clip import PetAction
+from animation.player import AnimationPlayer
+from animation.state_machine import ActionStateMachine
 from behavior.behavior_engine import BehaviorEngine
 from behavior.classifier import AppClassifier
 from behavior.cooldown import Cooldown
@@ -28,19 +32,35 @@ from behavior.events import EventType
 from behavior.scheduler import ContextEventScheduler
 from dialogue.local_rules import DialogueManager
 from dialogue.personality import normalize_personality
-from pet.animation import AnimationController
 from pet.interaction import FoodPanel, InteractionController
 from pet.movement import MovementController
 from pet.renderer import Bubble, PetRenderer
 from pet.state import PetStateStore
 from settings.config import ConfigManager
+from settings.panel import PetControlPanel
 
 
-BUBBLE_HEIGHT = 56
+BUBBLE_HEIGHT = 66
 MARGIN = 4
 BASE_SPRITE_HEIGHT = 340
 SIZE_LEVELS = {"小": 0.55, "中": 0.70, "大": 0.90}
 TICK_MS = 20
+
+STATE_NAMES = {
+    PetAction.IDLE: "待机",
+    PetAction.THINKING: "发呆",
+    PetAction.WALKING: "散步",
+    PetAction.HAPPY: "开心",
+    PetAction.TALKING: "说话",
+    PetAction.ANGRY: "生气",
+    PetAction.POKE_REACT: "被戳",
+    PetAction.EATING: "吃东西",
+    PetAction.SWEEPING: "扫地",
+    PetAction.SLEEPING: "睡觉",
+    PetAction.DRAGGING: "抓取中",
+    PetAction.FALLING: "落下",
+    PetAction.DIZZY: "眩晕",
+}
 
 
 class PetWindow(QWidget):
@@ -60,11 +80,12 @@ class PetWindow(QWidget):
         self.current_height = self._height_for_size(
             self._normalized_size(config.get("size", 0.7))
         )
-        self.sprites = self._load_sprites()
+        self.asset_registry = AssetRegistry(paths.assets_dir)
+        self.action_machine = ActionStateMachine(self.asset_registry.specs)
+        self.player = AnimationPlayer()
         self._resize_window()
 
         self.movement = MovementController(config.get("mode", "wander"))
-        self.animation = AnimationController()
         self.interaction = InteractionController()
         self.renderer = PetRenderer(BUBBLE_HEIGHT, MARGIN)
         self.bubble = Bubble()
@@ -84,9 +105,28 @@ class PetWindow(QWidget):
         self._click_timer.setSingleShot(True)
         self._click_timer.timeout.connect(self._do_click_reaction)
         self.food_panel = FoodPanel(self.on_food)
+        self.control_panel = PetControlPanel(
+            on_mode=self.set_mode,
+            on_size=self.set_size,
+            on_feed=self._open_food_panel,
+            on_say=self._say_daily_line,
+            on_snap=self.snap_into_screen,
+            on_awareness=self.set_awareness_enabled,
+            on_read_window_title=lambda enabled: self._set_awareness_flag("read_window_title", enabled),
+            on_idle_detection=lambda enabled: self._set_awareness_flag("idle_detection", enabled),
+            on_topmost=self.set_topmost,
+            on_fullscreen_hide=lambda enabled: self._set_awareness_flag("hide_on_fullscreen", enabled),
+            on_passthrough=self.set_passthrough,
+            on_autostart=self.set_autostart,
+            on_action=self._preview_action,
+            on_hide=self._hide_from_panel,
+            on_privacy=self._show_privacy_notice,
+            on_quit=self.quit_app,
+        )
         self._create_tray()
 
         self._create_awareness()
+        self._sync_animation_clip(crossfade=False)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.tick)
         self.timer.start(TICK_MS)
@@ -97,21 +137,6 @@ class PetWindow(QWidget):
         self._sync_awareness_timer()
 
     # ----- window and rendering -------------------------------------------------
-
-    def _load_sprites(self) -> dict[tuple[str, int, int], QPixmap]:
-        sprites: dict[tuple[str, int, int], QPixmap] = {}
-        for multiplier in SIZE_LEVELS.values():
-            height = self._height_for_size(multiplier)
-            for name in ("正面", "侧面", "背面"):
-                sized_path = self.paths.sprite_dir / f"{name}_{height}.png"
-                source_path = self.paths.sprite_dir / f"{name}.png"
-                path = sized_path if sized_path.exists() else source_path
-                pixmap = QPixmap(str(path))
-                if pixmap.isNull():
-                    raise RuntimeError(f"无法加载角色资源：{path}")
-                sprites[(name, height, 1)] = pixmap
-                sprites[(name, height, -1)] = pixmap
-        return sprites
 
     @staticmethod
     def _height_for_size(multiplier: float) -> int:
@@ -129,11 +154,18 @@ class PetWindow(QWidget):
         return 0.70
 
     def _resize_window(self) -> None:
-        widths = [
-            pixmap.width()
-            for (_, height, _), pixmap in self.sprites.items()
-            if height == self.current_height
-        ]
+        widths = []
+        for direction in ("left", "right", "up", "down"):
+            # Special poses such as sleeping and being held can legitimately be
+            # wider than the standing sprite.  Reserve their width up front so
+            # switching action never crops arms, tail or the lower body.
+            for action in PetAction:
+                clip = self.asset_registry.clip_for(
+                    action,
+                    height=self.current_height,
+                    direction=direction,
+                )
+                widths.extend(frame.pixmap.width() for frame in clip.frames)
         if not widths:
             raise RuntimeError("当前桌宠尺寸没有可用的精灵图。")
         horizontal_margin = int(self.current_height * 0.062) + 6
@@ -159,27 +191,74 @@ class PetWindow(QWidget):
     def paintEvent(self, _event) -> None:
         self.renderer.paint(
             self,
-            sprites=self.sprites,
-            current_key=self._current_sprite_key(),
-            animation=self.animation,
-            walking=self.movement.is_walking and not self.interaction.dragging,
+            snapshot=self.player.snapshot(),
             bubble=self.bubble,
         )
 
-    def _current_sprite_key(self) -> tuple[str, int, int]:
-        name = {
-            "left": "侧面",
-            "right": "侧面",
-            "up": "背面",
-            "down": "正面",
-        }[self.movement.direction]
-        facing = self.movement.facing if self.movement.direction in {"left", "right"} else 1
-        return name, self.current_height, facing
-
     def _set_direction(self, direction: str, facing: int | None = None) -> None:
-        previous_key = self._current_sprite_key()
         if self.movement.set_direction(direction, facing):
-            self.animation.start_crossfade(previous_key)
+            self._sync_animation_clip()
+
+    def _sync_animation_clip(self, *, crossfade: bool = True) -> None:
+        clip = self.asset_registry.clip_for(
+            self.action_machine.current,
+            height=self.current_height,
+            direction=self.movement.direction,
+        )
+        self.player.play(clip, crossfade=crossfade)
+        self._refresh_control_panel()
+
+    def _request_action(
+        self,
+        action: PetAction,
+        *,
+        now: float | None = None,
+        reason: str,
+        force: bool = False,
+    ) -> bool:
+        now = time.monotonic() if now is None else now
+        change = self.action_machine.request(action, now=now, reason=reason, force=force)
+        if change is None:
+            return False
+        self._sync_animation_clip()
+        return True
+
+    def _refresh_control_panel(self) -> None:
+        awareness = self.config.section("awareness")
+        self.control_panel.sync(
+            mode=self.movement.mode,
+            size=self._normalized_size(self.config.get("size", 0.70)),
+            awareness=bool(awareness.get("enabled", True)),
+            read_window_title=bool(awareness.get("read_window_title", True)),
+            idle_detection=bool(awareness.get("idle_detection", True)),
+            topmost=bool(self.config.get("topmost", True)),
+            fullscreen_hide=bool(awareness.get("hide_on_fullscreen", False)),
+            passthrough=bool(self.config.get("passthrough", False)),
+            autostart=bool(self.config.get("autostart", False)),
+            state_name=STATE_NAMES.get(self.action_machine.current, "待机"),
+        )
+
+    def _open_food_panel(self) -> None:
+        self.food_panel.popup_at(
+            self.x() + self.width() / 2,
+            self.y() + BUBBLE_HEIGHT,
+        )
+
+    def _say_daily_line(self) -> None:
+        self.say(self.dialogue.pick_daily(personality=self._personality()))
+
+    def _preview_action(self, raw_action: str) -> None:
+        try:
+            action = PetAction.coerce(raw_action)
+        except ValueError:
+            return
+        if action == PetAction.SLEEPING:
+            self.movement.rest_after_drag()
+        self._request_action(action, reason="panel_preview", force=True)
+
+    def _hide_from_panel(self) -> None:
+        self.control_panel.hide()
+        self.hide()
 
     # ----- main animation loop --------------------------------------------------
 
@@ -187,17 +266,22 @@ class PetWindow(QWidget):
         now = time.monotonic()
         delta_seconds = min(0.10, max(0.001, now - self._last_tick_at))
         self._last_tick_at = now
-        self.animation.tick(delta_seconds)
+        self.player.tick(delta_seconds)
+        if self.action_machine.update(now=now) is not None:
+            self._sync_animation_clip()
         walking = False
-        if not self.interaction.dragging:
+        movable_actions = {PetAction.IDLE, PetAction.THINKING, PetAction.WALKING}
+        if not self.interaction.dragging and self.action_machine.current in movable_actions:
             walking = self.movement.update(
                 self,
                 now=now,
                 delta_seconds=delta_seconds,
                 set_direction=self._set_direction,
             )
-        if walking and self.rng.random() < 0.002:
-            self.animation.start_jump(0.48)
+        if walking:
+            self._request_action(PetAction.WALKING, now=now, reason="movement")
+        elif not self.interaction.dragging and self.action_machine.current == PetAction.WALKING:
+            self._request_action(PetAction.IDLE, now=now, reason="movement_stop", force=True)
         if not walking and not self.interaction.dragging:
             self._maybe_idle_action(now)
         if now - self._last_state_update >= 5.0:
@@ -206,15 +290,17 @@ class PetWindow(QWidget):
         self.update()
 
     def _maybe_idle_action(self, now: float) -> None:
-        if self.rng.random() >= 0.0015:
+        if self.action_machine.current != PetAction.IDLE or self.rng.random() >= 0.0015:
             return
         pick = self.rng.random()
-        if pick < 0.34:
-            self.animation.start_jump()
-        elif pick < 0.62:
-            self.animation.start_idle_action("sway")
-        elif pick < 0.84:
-            self.animation.start_idle_action("stretch")
+        if pick < 0.28:
+            self._request_action(PetAction.THINKING, now=now, reason="idle_thought")
+        elif pick < 0.48:
+            self._request_action(PetAction.HAPPY, now=now, reason="idle_delight")
+        elif pick < 0.65:
+            self._request_action(PetAction.SWEEPING, now=now, reason="idle_chore")
+        elif pick < 0.78 and self.pet_state.energy < 0.38:
+            self._request_action(PetAction.SLEEPING, now=now, reason="low_energy")
         elif now - self._last_idle_speech_at >= 30.0:
             self._last_idle_speech_at = now
             personality = self._personality()
@@ -228,10 +314,16 @@ class PetWindow(QWidget):
         if not text or text == self._last_line:
             return False
         self._last_line = text
+        action = PetAction.THINKING if inner else PetAction.TALKING
+        self._request_action(action, reason="inner_voice" if inner else "speech")
+        now = time.monotonic()
+        display_seconds = min(5.4, max(2.9, 1.9 + len(text) * 0.18))
         self.bubble = Bubble(
             text=f"（{text}）" if inner else text,
-            until=time.monotonic() + 2.8,
+            until=now + display_seconds,
+            appeared_at=now,
             inner=inner,
+            state_name=STATE_NAMES.get(self.action_machine.current, ""),
         )
         self.update()
         return True
@@ -260,6 +352,7 @@ class PetWindow(QWidget):
         if self._drag_offset is None:
             self._click_timer.stop()
             self._drag_offset = position - QPoint(self.x(), self.y())
+            self._request_action(PetAction.DRAGGING, reason="drag_start", force=True)
         self.move(position - self._drag_offset)
         if self._drag_last_pos is not None:
             delta = position - self._drag_last_pos
@@ -280,6 +373,12 @@ class PetWindow(QWidget):
             self._set_direction("down")
             self.movement.rest_after_drag()
             self.pet_state.drag()
+            throw_speed = (outcome.velocity_x * outcome.velocity_x + outcome.velocity_y * outcome.velocity_y) ** 0.5
+            if throw_speed >= 1150.0:
+                if self._request_action(PetAction.FALLING, reason="fast_release", force=True):
+                    self.action_machine.queue_after_current(PetAction.DIZZY)
+            else:
+                self._request_action(PetAction.IDLE, reason="drag_release", force=True)
             self.say(self.dialogue.pick_interaction("drag", personality=self._personality()))
             return
         self._pending_click_region = outcome.body_region
@@ -299,18 +398,18 @@ class PetWindow(QWidget):
         personality = self._personality()
         if region == "head":
             self.pet_state.pet_head()
+            self._request_action(PetAction.HAPPY, reason="head_pat")
             self.say(self.dialogue.pick_interaction("head", personality=personality))
-            self.animation.start_idle_action("sway")
         else:
             self.pet_state.tap()
-            if self.rng.random() < 0.72:
-                self.animation.start_jump()
+            reaction = PetAction.ANGRY if self.pet_state.annoyance >= 0.26 else PetAction.POKE_REACT
+            self._request_action(reaction, reason="poke")
             self.say(self.dialogue.pick_interaction("tap", personality=personality))
 
     def on_food(self, _food: str) -> None:
         self.food_panel.hide()
         self.pet_state.feed()
-        self.animation.start_eating()
+        self._request_action(PetAction.EATING, reason="feed")
         self.say(self.dialogue.pick_interaction("food", personality=self._personality()))
 
     # ----- local environment awareness -----------------------------------------
@@ -360,6 +459,7 @@ class PetWindow(QWidget):
             ):
                 if self.isVisible():
                     self._hidden_by_fullscreen = True
+                    self.control_panel.hide()
                     self.hide()
             elif event.type == EventType.FULLSCREEN_EXIT and self._hidden_by_fullscreen:
                 self._hidden_by_fullscreen = False
@@ -378,6 +478,7 @@ class PetWindow(QWidget):
         self.config.set_nested("awareness", "enabled", bool(enabled))
         self._rebuild_behavior_components()
         self._sync_awareness_timer()
+        self._refresh_control_panel()
         if enabled:
             self.say("本地环境感知已开启。")
         else:
@@ -385,92 +486,21 @@ class PetWindow(QWidget):
 
     def _set_awareness_flag(self, key: str, enabled: bool) -> None:
         self.config.set_nested("awareness", key, bool(enabled))
+        self._refresh_control_panel()
 
     # ----- menus, tray, and persistence ----------------------------------------
 
     def contextMenuEvent(self, event) -> None:
-        menu = QMenu(self)
-        mode_menu = menu.addMenu("模式")
-        for label, key in (
-            ("自由散步", "wander"),
-            ("跟随鼠标", "follow"),
-            ("原地待着", "still"),
-        ):
-            action = mode_menu.addAction(label)
-            action.setCheckable(True)
-            action.setChecked(self.movement.mode == key)
-            action.triggered.connect(lambda _, value=key: self.set_mode(value))
-
-        size_menu = menu.addMenu("大小")
-        for label, multiplier in SIZE_LEVELS.items():
-            action = size_menu.addAction(label)
-            action.setCheckable(True)
-            action.setChecked(abs(self.current_height - self._height_for_size(multiplier)) < 2)
-            action.triggered.connect(lambda _, value=multiplier: self.set_size(value))
-
-        menu.addAction(
-            "喂食",
-            lambda: self.food_panel.popup_at(
-                self.x() + self.width() / 2,
-                self.y() + BUBBLE_HEIGHT,
-            ),
-        )
-        menu.addAction(
-            "说句话",
-            lambda: self.say(self.dialogue.pick_daily(personality=self._personality())),
-        )
-
-        awareness_menu = menu.addMenu("环境感知")
-        awareness = self.config.section("awareness")
-        enabled_action = awareness_menu.addAction("启用本地环境感知")
-        enabled_action.setCheckable(True)
-        enabled_action.setChecked(bool(awareness.get("enabled", True)))
-        enabled_action.triggered.connect(self.set_awareness_enabled)
-        title_action = awareness_menu.addAction("读取窗口标题")
-        title_action.setCheckable(True)
-        title_action.setChecked(bool(awareness.get("read_window_title", True)))
-        title_action.triggered.connect(
-            lambda on: self._set_awareness_flag("read_window_title", on)
-        )
-        idle_action = awareness_menu.addAction("检测用户空闲")
-        idle_action.setCheckable(True)
-        idle_action.setChecked(bool(awareness.get("idle_detection", True)))
-        idle_action.triggered.connect(
-            lambda on: self._set_awareness_flag("idle_detection", on)
-        )
-        fullscreen_action = awareness_menu.addAction("全屏时自动隐藏")
-        fullscreen_action.setCheckable(True)
-        fullscreen_action.setChecked(bool(awareness.get("hide_on_fullscreen", True)))
-        fullscreen_action.triggered.connect(
-            lambda on: self._set_awareness_flag("hide_on_fullscreen", on)
-        )
-        awareness_menu.addSeparator()
-        awareness_menu.addAction("查看隐私规则", self._show_privacy_notice)
-
-        menu.addSeparator()
-        menu.addAction("隐藏到托盘", self.hide)
-        menu.addAction("回到屏幕内", self.snap_into_screen)
-        passthrough_action = menu.addAction("鼠标穿透（点不到它）")
-        passthrough_action.setCheckable(True)
-        passthrough_action.setChecked(bool(self.config.get("passthrough", False)))
-        passthrough_action.triggered.connect(self.set_passthrough)
-        topmost_action = menu.addAction("窗口置顶")
-        topmost_action.setCheckable(True)
-        topmost_action.setChecked(bool(self.config.get("topmost", True)))
-        topmost_action.triggered.connect(self.set_topmost)
-        autostart_action = menu.addAction("开机自启")
-        autostart_action.setCheckable(True)
-        autostart_action.setChecked(bool(self.config.get("autostart", False)))
-        autostart_action.triggered.connect(self.set_autostart)
-        menu.addSeparator()
-        menu.addAction("退出", self.quit_app)
-        menu.exec(event.globalPos())
+        self._refresh_control_panel()
+        self.control_panel.popup_near_pet(self.frameGeometry())
+        event.accept()
 
     def _create_tray(self) -> None:
         icon = QIcon(str(self.paths.sprite_dir / "icon.png"))
         self.tray = QSystemTrayIcon(icon, self)
         tray_menu = QMenu()
         tray_menu.addAction("显示/隐藏", self.toggle_visible)
+        tray_menu.addAction("打开快速控制", lambda: self.control_panel.popup_at(self.pos()))
         tray_menu.addAction(
             "暂停/启用环境感知",
             lambda: self.set_awareness_enabled(
@@ -490,14 +520,14 @@ class PetWindow(QWidget):
     def set_mode(self, mode: str) -> None:
         self.movement.set_mode(mode)
         self.config.set("mode", self.movement.mode)
+        self._refresh_control_panel()
 
     def set_size(self, multiplier: float) -> None:
         multiplier = self._normalized_size(multiplier)
         self.current_height = self._height_for_size(multiplier)
         self.config.set("size", multiplier)
-        self.animation.crossfade = 0.0
-        self.animation.previous_sprite_key = None
         self._resize_window()
+        self._sync_animation_clip(crossfade=False)
         self.snap_into_screen()
 
     def snap_into_screen(self) -> None:
@@ -530,6 +560,7 @@ class PetWindow(QWidget):
                 new_style &= ~transparent
             set_style(handle, -20, new_style)
             self.config.set("passthrough", enabled)
+            self._refresh_control_panel()
             if enabled:
                 self.say("我隐身了！右键托盘图标可以解除。")
         except OSError as error:
@@ -539,6 +570,7 @@ class PetWindow(QWidget):
         self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, bool(enabled))
         self.config.set("topmost", bool(enabled))
         self.show()
+        self._refresh_control_panel()
 
     def set_autostart(self, enabled: bool) -> None:
         enabled = bool(enabled)
@@ -582,12 +614,14 @@ class PetWindow(QWidget):
                 link.unlink()
                 self.say("已取消开机自启。")
             self.config.set("autostart", enabled)
+            self._refresh_control_panel()
         except (OSError, subprocess.CalledProcessError) as error:
             QMessageBox.warning(self, "开机自启", f"设置失败：{error}")
 
     def toggle_visible(self) -> None:
         if self.isVisible():
             self._hidden_by_fullscreen = False
+            self.control_panel.hide()
             self.hide()
         else:
             self.show()

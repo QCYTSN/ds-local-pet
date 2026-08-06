@@ -12,7 +12,9 @@ class MovementController:
 
     modes = {"wander", "follow", "still"}
 
-    def __init__(self, mode: str = "wander", speed: float = 380.0) -> None:
+    # A four-frame chibi gait needs room to read.  At the old 380 px/s default,
+    # one full step covered more than a body width and looked like fast-forward.
+    def __init__(self, mode: str = "wander", speed: float = 180.0) -> None:
         self.mode = mode if mode in self.modes else "wander"
         self.speed = speed
         self.target: tuple[float, float] | None = None

@@ -1,0 +1,559 @@
+{
+  "format_version": 2,
+  "character_id": "dafeiyu",
+  "assets": {
+    "idle_front": {
+      "source_masters": [
+        "assets/processed/masters/front_base.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/idle_front/idle_front_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/idle_front/idle_front_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/idle_front/idle_front_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "clean_base_view",
+      "art_family": "clean_three_view",
+      "generated_at_runtime": false
+    },
+    "idle_think": {
+      "source_masters": [
+        "assets/processed/masters/generated/idle_think.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/idle_think/idle_think_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/idle_think/idle_think_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/idle_think/idle_think_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "idle_back": {
+      "source_masters": [
+        "assets/processed/masters/back_base.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/idle_back/idle_back_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/idle_back/idle_back_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/idle_back/idle_back_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "clean_base_view",
+      "art_family": "clean_three_view",
+      "generated_at_runtime": false
+    },
+    "walk_side": {
+      "source_masters": [
+        "assets/processed/masters/generated/walk_side_00.png",
+        "assets/processed/masters/generated/walk_side_01.png",
+        "assets/processed/masters/generated/walk_side_02.png",
+        "assets/processed/masters/generated/walk_side_03.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/walk_side/walk_side_187_00.png",
+          "assets/processed/runtime/states/walk_side/walk_side_187_01.png",
+          "assets/processed/runtime/states/walk_side/walk_side_187_02.png",
+          "assets/processed/runtime/states/walk_side/walk_side_187_03.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/walk_side/walk_side_238_00.png",
+          "assets/processed/runtime/states/walk_side/walk_side_238_01.png",
+          "assets/processed/runtime/states/walk_side/walk_side_238_02.png",
+          "assets/processed/runtime/states/walk_side/walk_side_238_03.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/walk_side/walk_side_306_00.png",
+          "assets/processed/runtime/states/walk_side/walk_side_306_01.png",
+          "assets/processed/runtime/states/walk_side/walk_side_306_02.png",
+          "assets/processed/runtime/states/walk_side/walk_side_306_03.png"
+        ]
+      },
+      "frame_count": 4,
+      "quality": "formal_unified_generated_walk_frames",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "happy": {
+      "source_masters": [
+        "assets/processed/masters/generated/happy.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/happy/happy_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/happy/happy_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/happy/happy_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "talk": {
+      "source_masters": [
+        "assets/processed/masters/generated/talk.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/talk/talk_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/talk/talk_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/talk/talk_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "angry": {
+      "source_masters": [
+        "assets/processed/masters/generated/angry.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/angry/angry_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/angry/angry_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/angry/angry_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "poke_react": {
+      "source_masters": [
+        "assets/processed/masters/generated/poke_react.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/poke_react/poke_react_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/poke_react/poke_react_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/poke_react/poke_react_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "eat": {
+      "source_masters": [
+        "assets/processed/masters/generated/eat.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/eat/eat_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/eat/eat_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/eat/eat_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "sweep": {
+      "source_masters": [
+        "assets/processed/masters/generated/sweep.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/sweep/sweep_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/sweep/sweep_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/sweep/sweep_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "sleep": {
+      "source_masters": [
+        "assets/processed/masters/generated/sleep.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/sleep/sleep_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/sleep/sleep_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/sleep/sleep_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "dizzy": {
+      "source_masters": [
+        "assets/processed/masters/generated/dizzy.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/dizzy/dizzy_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/dizzy/dizzy_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/dizzy/dizzy_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "dragging": {
+      "source_masters": [
+        "assets/processed/masters/generated/dragging.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/dragging/dragging_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/dragging/dragging_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/dragging/dragging_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "falling": {
+      "source_masters": [
+        "assets/processed/masters/generated/falling.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/falling/falling_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/falling/falling_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/falling/falling_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    }
+  },
+  "actions": {
+    "IDLE": {
+      "id": "IDLE",
+      "asset": "idle_front",
+      "loop": true,
+      "duration_ms": null,
+      "priority": 10,
+      "interruptible": true,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "breath"
+      },
+      "quality": "clean_base_view",
+      "requires_real_frames": false
+    },
+    "THINKING": {
+      "id": "THINKING",
+      "asset": "idle_think",
+      "loop": false,
+      "duration_ms": 2400,
+      "priority": 20,
+      "interruptible": true,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "think"
+      },
+      "quality": "formal_unified_generated_action",
+      "requires_real_frames": false
+    },
+    "WALKING": {
+      "id": "WALKING",
+      "asset": "walk_side",
+      "loop": true,
+      "duration_ms": null,
+      "priority": 30,
+      "interruptible": true,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "walk_frames"
+      },
+      "quality": "formal_unified_generated_walk_frames",
+      "requires_real_frames": false
+    },
+    "HAPPY": {
+      "id": "HAPPY",
+      "asset": "happy",
+      "loop": false,
+      "duration_ms": 1050,
+      "priority": 60,
+      "interruptible": true,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "bounce"
+      },
+      "quality": "formal_unified_generated_action",
+      "requires_real_frames": false
+    },
+    "TALKING": {
+      "id": "TALKING",
+      "asset": "talk",
+      "loop": false,
+      "duration_ms": 2900,
+      "priority": 45,
+      "interruptible": true,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "talk"
+      },
+      "quality": "formal_unified_generated_action",
+      "requires_real_frames": false
+    },
+    "ANGRY": {
+      "id": "ANGRY",
+      "asset": "angry",
+      "loop": false,
+      "duration_ms": 1500,
+      "priority": 70,
+      "interruptible": false,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "angry"
+      },
+      "quality": "formal_unified_generated_action",
+      "requires_real_frames": false
+    },
+    "POKE_REACT": {
+      "id": "POKE_REACT",
+      "asset": "poke_react",
+      "loop": false,
+      "duration_ms": 430,
+      "priority": 80,
+      "interruptible": false,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "recoil"
+      },
+      "quality": "formal_unified_generated_action",
+      "requires_real_frames": false
+    },
+    "EATING": {
+      "id": "EATING",
+      "asset": "eat",
+      "loop": false,
+      "duration_ms": 1500,
+      "priority": 65,
+      "interruptible": false,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "eat"
+      },
+      "quality": "formal_unified_generated_action",
+      "requires_real_frames": false
+    },
+    "SWEEPING": {
+      "id": "SWEEPING",
+      "asset": "sweep",
+      "loop": false,
+      "duration_ms": 2800,
+      "priority": 25,
+      "interruptible": true,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "sweep"
+      },
+      "quality": "formal_unified_generated_action",
+      "requires_real_frames": false
+    },
+    "SLEEPING": {
+      "id": "SLEEPING",
+      "asset": "sleep",
+      "loop": true,
+      "duration_ms": null,
+      "priority": 35,
+      "interruptible": true,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "sleep",
+        "x": 0.5,
+        "y": 0.5
+      },
+      "procedural_motion": {
+        "type": "sleep"
+      },
+      "quality": "formal_unified_generated_action",
+      "requires_real_frames": false
+    },
+    "DRAGGING": {
+      "id": "DRAGGING",
+      "asset": "dragging",
+      "loop": true,
+      "duration_ms": null,
+      "priority": 100,
+      "interruptible": false,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "drag",
+        "x": 0.5,
+        "y": 0.5
+      },
+      "procedural_motion": {
+        "type": "float"
+      },
+      "quality": "formal_unified_generated_action",
+      "requires_real_frames": false
+    },
+    "FALLING": {
+      "id": "FALLING",
+      "asset": "falling",
+      "loop": false,
+      "duration_ms": 900,
+      "priority": 90,
+      "interruptible": false,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "drag",
+        "x": 0.5,
+        "y": 0.5
+      },
+      "procedural_motion": {
+        "type": "fall"
+      },
+      "quality": "formal_unified_generated_action",
+      "requires_real_frames": false
+    },
+    "DIZZY": {
+      "id": "DIZZY",
+      "asset": "dizzy",
+      "loop": false,
+      "duration_ms": 2100,
+      "priority": 75,
+      "interruptible": false,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "seat",
+        "x": 0.5,
+        "y": 0.5
+      },
+      "procedural_motion": {
+        "type": "dizzy"
+      },
+      "quality": "formal_unified_generated_action",
+      "requires_real_frames": false
+    }
+  },
+  "fallbacks": {
+    "walk_side": "idle_front",
+    "talk": "idle_front",
+    "sleep": "idle_front",
+    "dragging": "idle_front",
+    "dizzy": "idle_front"
+  },
+  "notes": [
+    "所有运行时动作均来自同一套统一角色母版；运行时不生成图片。",
+    "WALKING 是已接入的四帧侧视循环，而非程序化滑行 placeholder。",
+    "用户提供的付费状态图仅作为动作语义参考，不混入最终显示图集。"
+  ]
+}
