@@ -1,113 +1,115 @@
 # 大肥鱼桌宠
 
-一个默认离线、轻量且注重隐私的 Windows 桌面宠物。它会散步、跟随鼠标、休息、冒泡说话，也能依据本机的前台应用、窗口标题、空闲时长与全屏状态给出低频的情境回应。
+一个 Windows 优先、离线优先的 PySide6 桌面宠物。大肥鱼运行在透明无边框窗口中，具备真实四帧走路、动作状态、鼠标互动、轻量环境感知和本地台词系统。
 
-当前版本不接入云端模型，不截图，不读取浏览历史，也不会常驻录屏或监听语音。
+默认不调用云端模型，不截图，不读取浏览历史，不监听语音；环境感知只读取可配置的本机前台窗口元数据。
 
-## 预览
+## 界面展示
+
+| 气泡与互动反馈 | 右键快速控制 |
+| --- | --- |
+| <img src="docs/images/pet-bubble.png" alt="大肥鱼气泡与互动反馈" width="300"> | <img src="docs/images/quick-panel.png" alt="大肥鱼右键快速控制面板" width="440"> |
 
 <p align="center">
-  <img src="assets/previews/contact_sheet/runtime_states.png" alt="大肥鱼桌宠的状态动作总览" width="720">
+  <img src="assets/previews/contact_sheet/runtime_states.png" alt="大肥鱼运行时状态动作总览" width="720">
 </p>
 
 <p align="center">
   <img src="assets/previews/gifs/walking.gif" alt="大肥鱼四帧侧向走路预览" width="260">
 </p>
 
-## 当前能力
+## 能做什么
 
-- 透明、无边框、可置顶的 PySide6 桌宠窗口
-- 统一角色图集：待机三视图、四帧侧面走路与十种互动/情绪姿势
-- 数据驱动状态机：待机、发呆、走路、开心、说话、生气、被戳、吃东西、扫地、睡觉、抓取、落下、眩晕
-- 帧播放器、动作优先级、无闪烁交叉淡化和轻量呼吸/反冲/弹跳等效果
-- 单击、摸头、拖拽、双击喂食、托盘、鼠标穿透、开机自启
-- 四种可配置的人格语气：标准、轻微毒舌、温和陪伴、社区梗
-- 本地环境感知：前台进程名、窗口标题、用户空闲、全屏状态
-- 本地规则识别 VS Code、GitHub、浏览器、B 站/YouTube、PDF/文档与 AI 对话页
-- 15 秒停留去抖、全局与应用级台词冷却、全屏自动隐藏
-- 默认隐私黑名单与自定义敏感进程；敏感窗口不会保留标题，也不会触发台词
-- 轻量生命状态：心情、精力、无聊、亲密度、烦躁、眩晕与投喂次数
+- 在桌面上自由散步、跟随鼠标或原地待着；右向行走由左向四帧逐帧镜像，左右保持同一角色身份。
+- 使用 13 个运行时状态：待机、发呆、走路、开心、说话、生气、被戳、吃东西、扫地、睡觉、抓取、落下、眩晕。
+- 支持摸头、戳身体、拖拽、快速甩开、双击投喂、右键快速控制和托盘操作。
+- 显示带淡入淡出的气泡；按台词长度自动调整停留时间。
+- 使用四种本地人格语气：标准、轻微毒舌、温和陪伴、社区梗；包含 token / 大肥鱼相关台词。
+- 可选本地环境感知：前台进程名、窗口标题、用户空闲和全屏状态；针对编码、GitHub、文档、视频等低频回应。
+- 提供本地隐私规则、鼠标穿透、窗口置顶、开机自启、全屏隐藏和状态持久化。
+
+## 技术实现
+
+- **桌面层**：PySide6 透明、无边框、置顶 `Tool` 窗口；系统托盘和 Windows 快捷方式启动。
+- **动画层**：JSON manifest 驱动的资源注册表、状态机和帧播放器。动作按优先级处理中断，有限动作自动返回待机。
+- **渲染层**：预生成透明 PNG + `QPixmap` 缓存；站立、睡眠、拖拽和掉落使用不同锚点，避免抓取时只显示头部。
+- **行走层**：正式四帧侧向走路循环，速度独立于帧播放；左向原帧、右向运行时镜像。
+- **交互层**：鼠标命中区域、拖拽速度检测、投喂和动作优先级协作。
+- **感知层**：仅通过 Windows 本地 API 读取前台窗口元数据与用户空闲时间；分类、去抖和冷却完全本地执行。
+- **数据层**：JSON 配置、生命状态和台词库均保存在本机；不上传桌面内容或历史记录。
+
+核心依赖：Python 3.11+、PySide6、Pillow、psutil。
+
+## 快速开始
+
+```powershell
+git clone https://github.com/QCYTSN/ds-local-pet.git
+cd ds-local-pet
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+安装完成后，双击 `启动大肥鱼桌宠.cmd` 即可。它使用 `pythonw` 在后台启动，不会弹出终端窗口；重复启动会唤回已运行的同一只桌宠。
+
+也可以从终端运行：
+
+```powershell
+.\.venv\Scripts\python.exe main.py
+```
+
+## 操作说明
+
+| 操作 | 效果 |
+| --- | --- |
+| 单击头部 | 开心反馈与台词 |
+| 单击身体 | 被戳反馈；连续戳会提高烦躁度 |
+| 双击角色 | 打开投喂面板 |
+| 按住并拖动 | 进入抓取状态；快速甩开会触发落下与眩晕 |
+| 右键角色 | 打开紧凑快速控制面板 |
+| 点击托盘图标 | 显示或隐藏桌宠 |
+
+右键面板默认只显示投喂、说话、开心、休息和移动模式；“更多设置”中提供尺寸、本地感知、置顶、全屏隐藏、鼠标穿透、开机自启和隐私入口。面板会优先放在角色侧边，避免遮住角色。
 
 ## 隐私边界
 
-环境感知只在本机以低频方式读取当前前台窗口的元数据：
+启用本地感知后，程序可读取以下低频元数据：
 
-- 进程名
+- 前台进程名
 - 窗口标题（可关闭）
-- 空闲时长（可关闭）
+- 用户空闲时长（可关闭）
 - 是否全屏
 
-不会截图、不会读取网页正文、不会读取浏览历史、不会上传或持久化这些感知数据。密码管理器、支付/银行、远程桌面、聊天、邮件与无痕窗口默认被屏蔽；可在 config.json 的 privacy.custom_process_names 中继续添加进程名。
+不会截图、读取网页正文、读取浏览历史、上传窗口标题或持久化感知记录。密码管理器、支付/银行、远程桌面、聊天、邮件和无痕窗口默认不会触发台词；可在 `config.json` 的 `privacy.custom_process_names` 继续补充本地屏蔽名单。
 
-## 运行
+## 项目结构
 
-推荐使用 Python 3.11 或更高版本。
+```text
+app/          启动、单实例与路径管理
+animation/    manifest、状态机、帧播放器、过渡与绘制效果
+pet/          窗口、渲染、移动、互动与生命状态
+awareness/    前台窗口、空闲、全屏和隐私过滤
+behavior/     分类、事件去抖、冷却和回应决策
+dialogue/     本地台词与人格调度
+assets/       运行时图集、动作 manifest、台词和预览
+settings/     紧凑控制面板与 JSON 配置
+tests/        单元测试和离屏界面回归测试
+tools/        素材校验、处理、预览与性能工具
+```
 
-    py -3.11 -m venv .venv
-    .venv\Scripts\Activate.ps1
-    python -m pip install -r requirements.txt
-    python main.py
+## 验证与性能
 
-双击 `启动大肥鱼桌宠.cmd` 可直接启动；重复点击会唤回已运行的同一只桌宠。右键桌宠会打开紧凑控制面板，可切换模式、大小、互动动作和环境感知选项。
+```powershell
+python -m unittest discover -s tests -v
+python tools/validate_assets.py
+python tools/measure_performance.py
+```
 
-## 动作素材状态
+当前测试覆盖分类、隐私、去抖、冷却、配置、生命状态、四帧走路、拖拽裁切、气泡以及控制面板展开/收起。最近一次离屏测量结果见 [docs/PERFORMANCE_REPORT.md](docs/PERFORMANCE_REPORT.md)。
 
-运行时采用一套统一的角色母版：待机保留干净三视图，开心、说话、吃东西、被戳、生气、扫地、睡觉、抓取、掉落和眩晕均使用同一角色身份的透明动作图。用户提供的付费姿势图保留为动作语义参考，不会在状态切换时混入另一套脸、服装细节或比例。
+## 素材说明
 
-走路已是正式四帧侧视循环，不再是 `walk_side_placeholder`。原始帧为左向；向右走会在运行时逐帧镜像，因此两边的步态、服装和发型完全一致。预览见 `assets/previews/gifs/walking.gif` 与 `assets/previews/gifs/walk_side_candidate_a_8fps.gif`，素材状态说明见 `docs/WALK_ASSET_REQUEST.md`。
-
-## 测试
-
-    python -m unittest discover -s tests -v
-
-这些测试覆盖应用分类、隐私规则、去抖事件、冷却策略、设置合并与生命状态持久化。它们不需要启动 GUI。
-
-## 性能记录
-
-可运行离屏渲染基准：
-
-    python tools/measure_performance.py
-
-结果会写入 `docs/PERFORMANCE_REPORT.md`，它只测量本地渲染与资源加载，不读取桌面内容。
-
-启动桌宠后，可以用任务管理器查到对应 PID，再在另一个终端中记录空闲或移动状态下的 CPU 与内存：
-
-    python tools/measure_runtime.py --pid 12345 --seconds 60 --output benchmarks/idle.json
-
-这会只采样进程资源用量，不读取桌面内容。建议分别记录原地待着、自由散步、拖拽与全屏隐藏四种场景，作为后续功能迭代的性能门槛。
-
-## 素材预处理
-
-把 正面.png、侧面.png、背面.png 放入一个输入目录后：
-
-    python preprocess.py path\to\raw-images
-    python preprocess2.py sprites --output-dir sprites
-
-两个脚本均使用相对项目路径和命令行参数，不再依赖作者机器上的绝对路径。
-
-## 打包
-
-安装 PyInstaller 后可执行：
-
-    pyinstaller --noconfirm --onefile --windowed --name 大肥鱼桌宠 --add-data "sprites;sprites" --add-data "assets;assets" --icon icon.ico main.py
-
-生成的程序位于 dist 目录。
-
-## 目录概览
-
-    app/          启动入口与运行时路径
-    pet/          窗口、渲染、动画、移动、互动、生命状态
-    awareness/    Windows 前台窗口、空闲、全屏与隐私过滤
-    behavior/     应用分类、事件去抖、冷却与反应决策
-    dialogue/     本地规则与人格调度
-    assets/       分类、隐私和台词资源
-    settings/     JSON 配置管理
-    tests/        不依赖 GUI 的单元测试
-
-## 开发路线
-
-当前实现覆盖工程模块化与本地环境感知 MVP。后续可以在不破坏离线默认和隐私边界的前提下，继续完善抚摸/抛掷物理、设置窗口、浏览器扩展，以及用户明确授权后的可选 AI 页面理解。
+公开仓库包含程序实际加载的统一角色运行时图集、动作候选元数据与预览。用户本地的付费原始姿势参考图不在公开仓库中，也不参与运行时状态切换。
 
 ## 协议与来源
 
-本项目基于 1190fasheqi/dafeiyu-pet 的 MIT 许可桌宠底座进行模块化重构和增量开发。原始许可证保留在 LICENSE，具体来源见 CREDITS.md。
+本项目基于 [1190fasheqi/dafeiyu-pet](https://github.com/1190fasheqi/dafeiyu-pet) 的 MIT 许可桌宠底座进行模块化重构和增量开发。原始许可证保留在 [LICENSE](LICENSE)，具体来源见 [CREDITS.md](CREDITS.md)。
