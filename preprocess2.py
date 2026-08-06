@@ -1,84 +1,119 @@
 # -*- coding: utf-8 -*-
-"""精灵边缘去污 + 预乘alpha缩放：
-1) 边缘像素做白底去混合，恢复真实颜色（消除移动/旋转时的白边）
-2) 用黑底/白底合成法做预乘alpha缩放，直接生成各尺寸精灵
-"""
+"""Create clean pre-scaled sprites from transparent DaFeiYu source views."""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
 from PIL import Image
-import os
-
-SRC = r"D:\图图\大肥鱼"
-OUT = r"D:\图图\大肥鱼\桌宠程序\sprites"
-SIZES = {0.55: 187, 0.7: 238, 0.9: 306}
-
-os.makedirs(OUT, exist_ok=True)
 
 
-def decontaminate(im):
-    """边缘像素对白底去混合：pixel = fg*a + 255*(1-a) → fg = (pixel - 255*(1-a))/a"""
-    im = im.convert("RGBA")
-    px = im.load()
-    w, h = im.size
-    for y in range(h):
-        for x in range(w):
-            r, g, b, a = px[x, y]
-            if 0 < a < 255:
-                t = a / 255.0
-                if a < 40:          # 极淡边缘直接透明，避免除噪放大
-                    px[x, y] = (0, 0, 0, 0)
-                    continue
-                nr = (r - 255 * (1 - t)) / t
-                ng = (g - 255 * (1 - t)) / t
-                nb = (b - 255 * (1 - t)) / t
-                px[x, y] = (int(max(0, min(255, nr))), int(max(0, min(255, ng))),
-                            int(max(0, min(255, nb))), a)
-    return im
+PROJECT_ROOT = Path(__file__).resolve().parent
+VIEW_NAMES = ("正面", "侧面", "背面")
+SIZES = (187, 238, 306)
 
 
-def cutout(path):
-    """白底泛洪抠图（沿用第一版逻辑）"""
-    im = Image.open(path).convert("RGBA")
-    from PIL import ImageDraw
-    w, h = im.size
-    for sx, sy in [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)]:
-        ImageDraw.floodfill(im, (sx, sy), (0, 0, 0, 0), thresh=30)
-    return im.crop(im.getbbox())
-
-
-def premult_resize(im, height):
-    """预乘alpha缩放：黑底/白底各缩放一次，再解出真实颜色+alpha"""
-    w0, h0 = im.size
-    nw = max(1, round(w0 * height / h0))
-    black = Image.new("RGBA", im.size, (0, 0, 0, 255))
-    white = Image.new("RGBA", im.size, (255, 255, 255, 255))
-    b_img = Image.alpha_composite(black, im).resize((nw, height), Image.LANCZOS)
-    w_img = Image.alpha_composite(white, im).resize((nw, height), Image.LANCZOS)
-    bp, wp = b_img.load(), w_img.load()
-    out = Image.new("RGBA", (nw, height))
-    op = out.load()
-    for y in range(height):
-        for x in range(nw):
-            br, bg, bb, _ = bp[x, y]
-            wr, wg, wb, _ = wp[x, y]
-            a = 255 - max(wr - br, wg - bg, wb - bb)   # 覆盖度
-            if a < 6:
-                op[x, y] = (0, 0, 0, 0)
+def decontaminate(image: Image.Image) -> Image.Image:
+    """Recover edge colours blended against white before the image was exported."""
+    image = image.convert("RGBA")
+    pixels = image.load()
+    for y in range(image.height):
+        for x in range(image.width):
+            red, green, blue, alpha = pixels[x, y]
+            if not 0 < alpha < 255:
                 continue
-            t = a / 255.0
-            op[x, y] = (int(max(0, min(255, br / t))), int(max(0, min(255, bg / t))),
-                        int(max(0, min(255, bb / t))), a)
-    return out
+            if alpha < 40:
+                pixels[x, y] = (0, 0, 0, 0)
+                continue
+            opacity = alpha / 255.0
+            pixels[x, y] = (
+                int(max(0, min(255, (red - 255 * (1 - opacity)) / opacity))),
+                int(max(0, min(255, (green - 255 * (1 - opacity)) / opacity))),
+                int(max(0, min(255, (blue - 255 * (1 - opacity)) / opacity))),
+                alpha,
+            )
+    return image
 
 
-for name in ["正面", "侧面", "背面"]:
-    raw = cutout(os.path.join(SRC, f"{name}.png"))
-    clean = decontaminate(raw)
-    for mult, h in SIZES.items():
-        im = premult_resize(clean, h)
-        im.save(os.path.join(OUT, f"{name}_{h}.png"))
-        print(f"{name}_{h}.png {im.size}")
+def premultiplied_resize(image: Image.Image, height: int) -> Image.Image:
+    """Resize using black/white composites to avoid pale translucent halos."""
+    width = max(1, round(image.width * height / image.height))
+    black = Image.new("RGBA", image.size, (0, 0, 0, 255))
+    white = Image.new("RGBA", image.size, (255, 255, 255, 255))
+    against_black = Image.alpha_composite(black, image).resize(
+        (width, height), Image.Resampling.LANCZOS
+    )
+    against_white = Image.alpha_composite(white, image).resize(
+        (width, height), Image.Resampling.LANCZOS
+    )
+    black_pixels, white_pixels = against_black.load(), against_white.load()
+    output = Image.new("RGBA", (width, height))
+    pixels = output.load()
+    for y in range(height):
+        for x in range(width):
+            black_rgb = black_pixels[x, y]
+            white_rgb = white_pixels[x, y]
+            alpha = 255 - max(
+                white_rgb[0] - black_rgb[0],
+                white_rgb[1] - black_rgb[1],
+                white_rgb[2] - black_rgb[2],
+            )
+            if alpha < 6:
+                pixels[x, y] = (0, 0, 0, 0)
+                continue
+            opacity = alpha / 255.0
+            pixels[x, y] = (
+                int(max(0, min(255, black_rgb[0] / opacity))),
+                int(max(0, min(255, black_rgb[1] / opacity))),
+                int(max(0, min(255, black_rgb[2] / opacity))),
+                alpha,
+            )
+    return output
 
-# 托盘图标（用中档再缩）
-icon = Image.open(os.path.join(OUT, "正面_187.png")).convert("RGBA")
-icon = premult_resize(icon, 64)
-icon.save(os.path.join(OUT, "icon.png"))
-print("icon 64x64")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="生成预处理后的多尺寸桌宠精灵。")
+    parser.add_argument("input_dir", type=Path, help="包含透明 正面.png、侧面.png、背面.png 的目录。")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=PROJECT_ROOT / "sprites",
+        help="输出目录，默认是项目 sprites 目录。",
+    )
+    parser.add_argument(
+        "--sizes",
+        type=int,
+        nargs="+",
+        default=SIZES,
+        help="要生成的精灵高度列表，默认 187 238 306。",
+    )
+    arguments = parser.parse_args()
+    if any(size <= 0 for size in arguments.sizes):
+        parser.error("--sizes 必须全部为正数。")
+
+    input_dir = arguments.input_dir.resolve()
+    output_dir = arguments.output_dir.resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for name in VIEW_NAMES:
+        source = input_dir / f"{name}.png"
+        if not source.exists():
+            parser.error(f"缺少输入文件：{source}")
+        with Image.open(source) as raw:
+            cleaned = decontaminate(raw.convert("RGBA"))
+        for height in arguments.sizes:
+            output = output_dir / f"{name}_{height}.png"
+            image = premultiplied_resize(cleaned, height)
+            image.save(output)
+            print(f"{output.name}: {image.size}")
+
+    icon_source = output_dir / "正面_187.png"
+    if icon_source.exists():
+        with Image.open(icon_source) as raw:
+            icon = premultiplied_resize(raw.convert("RGBA"), 64)
+        icon.save(output_dir / "icon.png")
+        print(f"icon -> {output_dir / 'icon.png'}")
+
+
+if __name__ == "__main__":
+    main()

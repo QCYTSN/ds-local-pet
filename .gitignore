@@ -1,5 +1,7 @@
 # 运行时生成
 config.json
+pet_state.json
+*.tmp
 
 # 虚拟环境
 .venv/
@@ -12,3 +14,4 @@ dist/
 # Python 缓存
 __pycache__/
 *.pyc
+.coverage

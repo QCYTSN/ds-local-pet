@@ -1,58 +1,100 @@
 # -*- coding: utf-8 -*-
-"""三视图抠图+规格化：白底 → 透明 PNG，统一高度，裁掉空白边。"""
+"""Cut out three source views and normalize them into transparent sprites."""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
 from PIL import Image, ImageDraw
-import os
 
-SRC = r"D:\图图\大肥鱼"
-OUT = r"D:\图图\大肥鱼\桌宠程序\sprites"
-TARGET_H = 340  # 桌宠显示高度(px)
 
-os.makedirs(OUT, exist_ok=True)
+PROJECT_ROOT = Path(__file__).resolve().parent
+VIEW_NAMES = ("正面", "侧面", "背面")
 
-def cutout(path):
-    im = Image.open(path).convert("RGBA")
-    w, h = im.size
-    seed = im.getpixel((0, 0))
-    # 1) 从四角做连通域泛洪，把背景整片变透明（人物内部的白不受影响）
-    for sx, sy in [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)]:
-        ImageDraw.floodfill(im, (sx, sy), (0, 0, 0, 0), thresh=30)
-    # 2) 去白边：贴着透明区的亮像素也变透明（消除抗锯齿白晕）
+
+def cutout(path: Path, target_height: int) -> Image.Image:
+    with Image.open(path) as source:
+        image = source.convert("RGBA")
+    width, height = image.size
+    for start_x, start_y in (
+        (0, 0),
+        (width - 1, 0),
+        (0, height - 1),
+        (width - 1, height - 1),
+    ):
+        ImageDraw.floodfill(image, (start_x, start_y), (0, 0, 0, 0), thresh=30)
+
+    # Remove bright anti-aliased halos adjacent to transparency.
     for _ in range(3):
-        px = im.load()
+        pixels = image.load()
         changed = False
-        for y in range(h):
-            for x in range(w):
-                r, g, b, a = px[x, y]
-                if a == 0:
+        for y in range(height):
+            for x in range(width):
+                red, green, blue, alpha = pixels[x, y]
+                if alpha == 0 or min(red, green, blue) <= 215:
                     continue
-                if r > 215 and g > 215 and b > 215:
-                    # 检查邻域是否有透明像素
-                    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1), (1, -1), (-1, 1)):
-                        nx, ny = x + dx, y + dy
-                        if 0 <= nx < w and 0 <= ny < h and px[nx, ny][3] == 0:
-                            px[x, y] = (0, 0, 0, 0)
-                            changed = True
-                            break
+                for offset_x, offset_y in (
+                    (1, 0),
+                    (-1, 0),
+                    (0, 1),
+                    (0, -1),
+                    (1, 1),
+                    (-1, -1),
+                    (1, -1),
+                    (-1, 1),
+                ):
+                    neighbor_x, neighbor_y = x + offset_x, y + offset_y
+                    if (
+                        0 <= neighbor_x < width
+                        and 0 <= neighbor_y < height
+                        and pixels[neighbor_x, neighbor_y][3] == 0
+                    ):
+                        pixels[x, y] = (0, 0, 0, 0)
+                        changed = True
+                        break
         if not changed:
             break
-    # 3) 裁掉透明边
-    bbox = im.getbbox()
-    if bbox is None:
-        raise RuntimeError(f"{path}: 抠图后为空！")
-    im = im.crop(bbox)
-    # 4) 统一高度
-    w2, h2 = im.size
-    scale = TARGET_H / h2
-    im = im.resize((max(1, round(w2 * scale)), TARGET_H), Image.LANCZOS)
-    return im
 
-for name in ["正面", "侧面", "背面"]:
-    im = cutout(os.path.join(SRC, f"{name}.png"))
-    out_path = os.path.join(OUT, f"{name}.png")
-    im.save(out_path)
-    print(f"{name}: {im.size} -> {out_path}")
+    bounds = image.getbbox()
+    if bounds is None:
+        raise RuntimeError(f"{path} 抠图后为空。")
+    image = image.crop(bounds)
+    scaled_width = max(1, round(image.width * target_height / image.height))
+    return image.resize((scaled_width, target_height), Image.Resampling.LANCZOS)
 
-# 托盘小图标
-Icon = cutout(os.path.join(SRC, "正面.png")).resize((64, 64), Image.LANCZOS)
-Icon.save(os.path.join(OUT, "icon.png"))
-print("icon: 64x64")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="将正面、侧面、背面白底图抠成统一透明精灵。")
+    parser.add_argument("input_dir", type=Path, help="包含 正面.png、侧面.png、背面.png 的目录。")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=PROJECT_ROOT / "sprites",
+        help="输出目录，默认是项目 sprites 目录。",
+    )
+    parser.add_argument("--height", type=int, default=340, help="统一后的角色高度，默认 340。")
+    arguments = parser.parse_args()
+    if arguments.height <= 0:
+        parser.error("--height 必须是正数。")
+
+    input_dir = arguments.input_dir.resolve()
+    output_dir = arguments.output_dir.resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for name in VIEW_NAMES:
+        source = input_dir / f"{name}.png"
+        if not source.exists():
+            parser.error(f"缺少输入文件：{source}")
+        image = cutout(source, arguments.height)
+        output = output_dir / f"{name}.png"
+        image.save(output)
+        print(f"{name}: {image.size} -> {output}")
+
+    icon = Image.open(output_dir / "正面.png").convert("RGBA")
+    icon.thumbnail((64, 64), Image.Resampling.LANCZOS)
+    icon.save(output_dir / "icon.png")
+    print(f"icon -> {output_dir / 'icon.png'}")
+
+
+if __name__ == "__main__":
+    main()

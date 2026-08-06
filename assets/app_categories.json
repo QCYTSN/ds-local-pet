@@ -1,0 +1,63 @@
+{
+  "categories": {
+    "coding": [
+      "Code.exe",
+      "pycharm64.exe",
+      "WindowsTerminal.exe",
+      "devenv.exe",
+      "idea64.exe",
+      "sublime_text.exe",
+      "notepad++.exe"
+    ],
+    "browser": [
+      "msedge.exe",
+      "chrome.exe",
+      "firefox.exe",
+      "brave.exe",
+      "opera.exe"
+    ],
+    "document": [
+      "WINWORD.EXE",
+      "Acrobat.exe",
+      "AcroRd32.exe",
+      "POWERPNT.EXE",
+      "EXCEL.EXE"
+    ],
+    "chat": [
+      "WeChat.exe",
+      "QQ.exe",
+      "Discord.exe",
+      "Telegram.exe",
+      "Teams.exe"
+    ],
+    "game": [
+      "steam.exe",
+      "epicgameslauncher.exe",
+      "riotclientservices.exe"
+    ]
+  },
+  "title_rules": {
+    "github": [
+      "github.com",
+      "github"
+    ],
+    "video": [
+      "bilibili",
+      "哔哩哔哩",
+      "youtube",
+      "youtube music",
+      "netflix"
+    ],
+    "paper": [
+      "arxiv",
+      "openreview",
+      "论文"
+    ],
+    "ai_chat": [
+      "chatgpt",
+      "deepseek",
+      "claude",
+      "gemini"
+    ]
+  }
+}
