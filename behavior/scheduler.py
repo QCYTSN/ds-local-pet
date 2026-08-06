@@ -16,15 +16,19 @@ class ContextEventScheduler:
         min_dwell_seconds: float = 15.0,
         idle_after_seconds: float = 300.0,
         late_night_hour: int = 23,
+        fullscreen_confirmations: int = 2,
     ) -> None:
         self.min_dwell_seconds = min_dwell_seconds
         self.idle_after_seconds = idle_after_seconds
         self.late_night_hour = late_night_hour
+        self.fullscreen_confirmations = max(1, fullscreen_confirmations)
         self._identity: tuple[str, str, int] | None = None
         self._entered_at: float | None = None
         self._stay_announced = False
         self._idle_announced = False
         self._fullscreen = False
+        self._fullscreen_candidate: bool | None = None
+        self._fullscreen_candidate_count = 0
         self._late_night_date: str | None = None
 
     def observe(
@@ -60,7 +64,15 @@ class ContextEventScheduler:
             self._idle_announced = False
             events.append(ContextEvent(EventType.USER_RETURN, snapshot, now))
 
-        if snapshot.is_fullscreen != self._fullscreen:
+        if snapshot.is_fullscreen == self._fullscreen_candidate:
+            self._fullscreen_candidate_count += 1
+        else:
+            self._fullscreen_candidate = snapshot.is_fullscreen
+            self._fullscreen_candidate_count = 1
+        if (
+            self._fullscreen_candidate_count >= self.fullscreen_confirmations
+            and snapshot.is_fullscreen != self._fullscreen
+        ):
             self._fullscreen = snapshot.is_fullscreen
             event_type = EventType.FULLSCREEN_ENTER if self._fullscreen else EventType.FULLSCREEN_EXIT
             events.append(ContextEvent(event_type, snapshot, now))

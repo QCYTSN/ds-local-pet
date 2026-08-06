@@ -48,14 +48,20 @@ class ContextEventSchedulerTests(unittest.TestCase):
             wall_clock=datetime(2026, 8, 6, 12),
         )
         returned = scheduler.observe(snapshot(), now=4.0, wall_clock=datetime(2026, 8, 6, 12))
-        fullscreen = scheduler.observe(
+        first_fullscreen = scheduler.observe(
             snapshot(fullscreen=True),
             now=5.0,
+            wall_clock=datetime(2026, 8, 6, 12),
+        )
+        fullscreen = scheduler.observe(
+            snapshot(fullscreen=True),
+            now=6.0,
             wall_clock=datetime(2026, 8, 6, 12),
         )
         self.assertIn(EventType.USER_IDLE, [event.type for event in idle])
         self.assertNotIn(EventType.USER_IDLE, [event.type for event in still_idle])
         self.assertIn(EventType.USER_RETURN, [event.type for event in returned])
+        self.assertNotIn(EventType.FULLSCREEN_ENTER, [event.type for event in first_fullscreen])
         self.assertIn(EventType.FULLSCREEN_ENTER, [event.type for event in fullscreen])
 
     def test_late_night_is_only_emitted_once_per_day(self) -> None:

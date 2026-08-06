@@ -47,11 +47,15 @@ class PetRenderer:
 
         now = animation.elapsed
         if walking:
-            sway = math.sin(now * 9.0) * 3.5
-            bob = -abs(math.sin(now * 4.5)) * 7.0
+            walk_phase = math.sin(now * 10.5)
+            sway = walk_phase * 6.0
+            bob = -abs(math.sin(now * 5.25)) * 12.0
+            walk_scale_x = 1.0 + walk_phase * 0.035
+            walk_scale_y = 1.0 - walk_phase * 0.025
         else:
             sway = math.sin(now * 2.5) * 1.5
             bob = 0.0
+            walk_scale_x = walk_scale_y = 1.0
         breath = 1.0 + 0.02 * math.sin(now * 2.5)
         eat = (
             1.0 + 0.12 * max(0.0, math.sin(animation.eat_strength * math.pi))
@@ -82,8 +86,8 @@ class PetRenderer:
                 return
             _, sprite_height, facing = key
             pixmap = sprites[key]
-            image_height = pixmap.height() * scale * (1 + action_scale_y)
-            image_width = pixmap.width() * scale * (1 + action_scale_x)
+            image_height = pixmap.height() * scale * walk_scale_y * (1 + action_scale_y)
+            image_width = pixmap.width() * scale * walk_scale_x * (1 + action_scale_x)
             center_x = widget.width() / 2
             bottom = self.bubble_height + self.margin + sprite_height
             image_x = center_x - image_width / 2

@@ -27,6 +27,9 @@ class FullscreenDetector:
     """Detect a foreground window covering its current monitor."""
 
     _MONITOR_DEFAULTTONEAREST = 2
+    _GWL_STYLE = -16
+    _WS_CAPTION = 0x00C00000
+    _WS_THICKFRAME = 0x00040000
 
     def __init__(self, tolerance: int = 2) -> None:
         self.tolerance = tolerance
@@ -45,9 +48,21 @@ class FullscreenDetector:
                 ctypes.POINTER(_MonitorInfo),
             ]
             self._user32.GetMonitorInfoW.restype = wintypes.BOOL
+            self._get_window_style = getattr(
+                self._user32,
+                "GetWindowLongPtrW",
+                self._user32.GetWindowLongW,
+            )
+            self._get_window_style.argtypes = [wintypes.HWND, ctypes.c_int]
+            self._get_window_style.restype = ctypes.c_ssize_t
 
     def is_fullscreen(self, handle: int) -> bool:
         if not self._available or not handle:
+            return False
+        style = int(self._get_window_style(handle, self._GWL_STYLE))
+        # A standard framed/maximized window can cover monitor bounds due to
+        # invisible resize borders, but it is not a fullscreen app or game.
+        if style & (self._WS_CAPTION | self._WS_THICKFRAME):
             return False
         rect = _Rect()
         if not self._user32.GetWindowRect(handle, ctypes.byref(rect)):

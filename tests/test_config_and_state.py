@@ -37,6 +37,22 @@ class ConfigManagerTests(unittest.TestCase):
             restored = ConfigManager(path)
             self.assertFalse(restored.section("awareness")["enabled"])
 
+    def test_old_fullscreen_default_is_migrated_to_safe_off(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "config.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 2,
+                        "awareness": {"hide_on_fullscreen": True},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            config = ConfigManager(path)
+            self.assertEqual(config.get("schema_version"), 3)
+            self.assertFalse(config.section("awareness")["hide_on_fullscreen"])
+
 
 class PetStateStoreTests(unittest.TestCase):
     def test_state_round_trip(self) -> None:

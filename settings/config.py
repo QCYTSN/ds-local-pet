@@ -7,7 +7,7 @@ from typing import Any
 
 
 DEFAULT_CONFIG: dict[str, Any] = {
-    "schema_version": 2,
+    "schema_version": 3,
     "mode": "wander",
     "size": 0.7,
     "topmost": True,
@@ -20,7 +20,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "enabled": True,
         "read_window_title": True,
         "idle_detection": True,
-        "hide_on_fullscreen": True,
+        "hide_on_fullscreen": False,
         "poll_interval_ms": 1000,
         "min_dwell_seconds": 15,
         "global_cooldown_seconds": 150,
@@ -60,7 +60,15 @@ class ConfigManager:
             raw = json.loads(self.path.read_text(encoding="utf-8"))
         except (OSError, ValueError, TypeError):
             raw = {}
-        return _merge_defaults(DEFAULT_CONFIG, raw)
+        merged = _merge_defaults(DEFAULT_CONFIG, raw)
+        previous_schema = raw.get("schema_version", 1) if isinstance(raw, dict) else 1
+        # Version 2 used a permissive fullscreen heuristic. Keep the feature
+        # available, but turn it off during migration so ordinary maximized apps
+        # cannot make the pet appear to flicker.
+        if not isinstance(previous_schema, int) or previous_schema < 3:
+            merged["awareness"]["hide_on_fullscreen"] = False
+        merged["schema_version"] = DEFAULT_CONFIG["schema_version"]
+        return merged
 
     def save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)

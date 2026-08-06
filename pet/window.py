@@ -27,7 +27,7 @@ from behavior.cooldown import Cooldown
 from behavior.events import EventType
 from behavior.scheduler import ContextEventScheduler
 from dialogue.local_rules import DialogueManager
-from dialogue.personality import PERSONALITIES, normalize_personality
+from dialogue.personality import normalize_personality
 from pet.animation import AnimationController
 from pet.interaction import FoodPanel, InteractionController
 from pet.movement import MovementController
@@ -196,6 +196,8 @@ class PetWindow(QWidget):
                 delta_seconds=delta_seconds,
                 set_direction=self._set_direction,
             )
+        if walking and self.rng.random() < 0.002:
+            self.animation.start_jump(0.48)
         if not walking and not self.interaction.dragging:
             self._maybe_idle_action(now)
         if now - self._last_state_update >= 5.0:
@@ -590,6 +592,13 @@ class PetWindow(QWidget):
         else:
             self.show()
             self.raise_()
+
+    def activate_from_shortcut(self) -> None:
+        """Bring the existing pet back when its shortcut is clicked again."""
+        self._hidden_by_fullscreen = False
+        self.show()
+        self.raise_()
+        self.activateWindow()
 
     def _show_privacy_notice(self) -> None:
         QMessageBox.information(
