@@ -1,0 +1,21 @@
+{
+  "candidate": "candidate_a",
+  "source_sheet": "assets/candidates/walk_side/candidate_a/source_sheet.png",
+  "grid": "2x2",
+  "facing": "left",
+  "frames": [
+    "walk_side_00.png",
+    "walk_side_01.png",
+    "walk_side_02.png",
+    "walk_side_03.png"
+  ],
+  "review_only": false,
+  "formal_runtime": true,
+  "approved_by_user": true,
+  "generated_at_runtime": false,
+  "notes": [
+    "User approved the unified generated art family for runtime use after visual review.",
+    "The sheet was generated on #00FF00 and only that background was keyed to alpha.",
+    "No source asset was replaced, renamed, cropped, or reconstructed."
+  ]
+}

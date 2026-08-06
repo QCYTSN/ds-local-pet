@@ -1,0 +1,296 @@
+{
+  "assets": {
+    "idle_front": {
+      "source_masters": [
+        "assets/processed/masters/front_base.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/idle_front/idle_front_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/idle_front/idle_front_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/idle_front/idle_front_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "clean_base_view",
+      "art_family": "clean_three_view",
+      "generated_at_runtime": false
+    },
+    "idle_think": {
+      "source_masters": [
+        "assets/processed/masters/generated/idle_think.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/idle_think/idle_think_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/idle_think/idle_think_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/idle_think/idle_think_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "idle_back": {
+      "source_masters": [
+        "assets/processed/masters/back_base.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/idle_back/idle_back_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/idle_back/idle_back_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/idle_back/idle_back_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "clean_base_view",
+      "art_family": "clean_three_view",
+      "generated_at_runtime": false
+    },
+    "walk_side": {
+      "source_masters": [
+        "assets/processed/masters/generated/walk_side_00.png",
+        "assets/processed/masters/generated/walk_side_01.png",
+        "assets/processed/masters/generated/walk_side_02.png",
+        "assets/processed/masters/generated/walk_side_03.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/walk_side/walk_side_187_00.png",
+          "assets/processed/runtime/states/walk_side/walk_side_187_01.png",
+          "assets/processed/runtime/states/walk_side/walk_side_187_02.png",
+          "assets/processed/runtime/states/walk_side/walk_side_187_03.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/walk_side/walk_side_238_00.png",
+          "assets/processed/runtime/states/walk_side/walk_side_238_01.png",
+          "assets/processed/runtime/states/walk_side/walk_side_238_02.png",
+          "assets/processed/runtime/states/walk_side/walk_side_238_03.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/walk_side/walk_side_306_00.png",
+          "assets/processed/runtime/states/walk_side/walk_side_306_01.png",
+          "assets/processed/runtime/states/walk_side/walk_side_306_02.png",
+          "assets/processed/runtime/states/walk_side/walk_side_306_03.png"
+        ]
+      },
+      "frame_count": 4,
+      "quality": "formal_unified_generated_walk_frames",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "happy": {
+      "source_masters": [
+        "assets/processed/masters/generated/happy.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/happy/happy_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/happy/happy_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/happy/happy_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "talk": {
+      "source_masters": [
+        "assets/processed/masters/generated/talk.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/talk/talk_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/talk/talk_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/talk/talk_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "angry": {
+      "source_masters": [
+        "assets/processed/masters/generated/angry.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/angry/angry_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/angry/angry_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/angry/angry_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "poke_react": {
+      "source_masters": [
+        "assets/processed/masters/generated/poke_react.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/poke_react/poke_react_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/poke_react/poke_react_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/poke_react/poke_react_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "eat": {
+      "source_masters": [
+        "assets/processed/masters/generated/eat.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/eat/eat_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/eat/eat_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/eat/eat_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "sweep": {
+      "source_masters": [
+        "assets/processed/masters/generated/sweep.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/sweep/sweep_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/sweep/sweep_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/sweep/sweep_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "sleep": {
+      "source_masters": [
+        "assets/processed/masters/generated/sleep.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/sleep/sleep_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/sleep/sleep_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/sleep/sleep_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "dizzy": {
+      "source_masters": [
+        "assets/processed/masters/generated/dizzy.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/dizzy/dizzy_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/dizzy/dizzy_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/dizzy/dizzy_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "dragging": {
+      "source_masters": [
+        "assets/processed/masters/generated/dragging.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/dragging/dragging_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/dragging/dragging_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/dragging/dragging_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "falling": {
+      "source_masters": [
+        "assets/processed/masters/generated/falling.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/falling/falling_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/falling/falling_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/falling/falling_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    }
+  }
+}

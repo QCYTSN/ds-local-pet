@@ -1,0 +1,27 @@
+{
+  "candidate": "candidate_c_daily",
+  "source_sheet": "assets\\candidates\\state_actions\\candidate_c_daily\\source_sheet.png",
+  "grid": "2x2",
+  "poses": [
+    "idle_think",
+    "angry",
+    "sweep",
+    "sleep"
+  ],
+  "frames": [
+    "idle_think.png",
+    "angry.png",
+    "sweep.png",
+    "sleep.png"
+  ],
+  "preview": "assets\\previews\\gifs\\state_actions_candidate_c_daily_4poses.gif",
+  "review_only": false,
+  "formal_runtime": true,
+  "approved_by_user": true,
+  "generated_at_runtime": false,
+  "notes": [
+    "Generated key-pose sheet extracted from a uniform chroma-key background.",
+    "The sheet was generated on #00FF00 and only that background was keyed to alpha.",
+    "No original asset was replaced, renamed, cropped, or reconstructed."
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "process_names": [
+    "1password.exe",
+    "bitwarden.exe",
+    "keepass.exe",
+    "keepassxc.exe",
+    "mstsc.exe",
+    "teamviewer.exe",
+    "anydesk.exe",
+    "wechat.exe",
+    "qq.exe",
+    "discord.exe",
+    "telegram.exe",
+    "outlook.exe",
+    "thunderbird.exe",
+    "alipay.exe",
+    "bankcomm.exe"
+  ],
+  "title_keywords": [
+    "inprivate",
+    "incognito",
+    "无痕",
+    "隐私浏览",
+    "private browsing",
+    "密码管理器",
+    "银行",
+    "支付"
+  ]
+}
