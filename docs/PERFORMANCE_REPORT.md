@@ -1,17 +1,35 @@
-# 性能验证报告
+# Performance Verification Report
 
-## 结论
+## Summary
 
-动画时钟固定为 20ms（目标 50 FPS）。在本机离屏渲染基准中，180 帧平均渲染为 **0.18 ms/帧**，等效 **5560.9 FPS**；这说明当前透明精灵、气泡和程序化效果的绘制预算足以覆盖 50 FPS 的目标。
+The animation clock runs at a fixed 20 ms interval (target 50 FPS). In an off-screen rendering benchmark, the average draw time per frame is **0.18 ms**, which occupies **0.9%** of the 20 ms per-frame budget. This leaves ample headroom for the transparent sprite, bubble, and programmatic effects.
 
-## 本次测量
+## Measured Values
 
-- PySide6：6.11.1
-- 运行时 PNG：51 个，磁盘占用 3899.8 KiB
-- 当前尺寸已加载的独立 `QPixmap` 估算：3.131 MiB
-- 清单与当前尺寸纹理预热：22.639 ms
-- 离屏画面：180 帧，平均 0.18 ms/帧
+| Metric | Value |
+|--------|-------|
+| PySide6 version | 6.11.1 |
+| Runtime PNG files | 51, ~3.9 MiB on disk |
+| Loaded QPixmap memory (estimate) | 3.1 MiB |
+| Manifest + texture warm-up | 22.6 ms |
+| Off-screen benchmark: 180 frames | 0.18 ms/frame average |
+| **Implied draw budget usage** | **0.9% at target 50 FPS** |
 
-## 边界
+## Caveats
 
-这是受控离屏渲染检查，不把桌面合成器、其他应用占用或多屏 DPI 计入结果。运行时不加载图像模型、不截图、不访问网络；正式四帧走路与统一角色状态图均已计入本次资源预热和绘制检查。
+- This is a controlled off-screen rendering benchmark. It does **not** include the desktop compositor, other applications, or multi-monitor DPI scaling.
+- The runtime does not load image models, take screenshots, or access the network.
+- The formal 4-frame walk cycle and all unified character state assets are included in the resource warm-up and draw time measurement.
+- **This is NOT equivalent to real-world desktop FPS.** The off-screen draw time is a lower bound; actual on-screen performance depends on GPU composition, display refresh rate, and system load.
+
+## Real-World Performance (Windows)
+
+To be measured on actual Windows hardware. Recommended measurement points:
+
+- **Idle CPU**: pet visible but not animating
+- **Walking CPU**: continuous walking animation
+- **RSS memory**: after startup, after 1 hour
+- **Startup time**: from double-click to visible pet
+- **Memory growth**: check for leaks over 4+ hours
+
+These measurements require a dedicated Windows test environment and are not yet available automatically.

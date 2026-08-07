@@ -1,0 +1,70 @@
+{
+  "masters": [
+    {
+      "logical_name": "front_base",
+      "source_file": "sprites/正面.png",
+      "reference_file": "assets/references/front_base.png",
+      "master_file": "assets/processed/masters/front_base.png",
+      "direction": "front",
+      "source_size": [
+        255,
+        340
+      ],
+      "master_size": [
+        255,
+        340
+      ],
+      "character_bbox": [
+        0,
+        0,
+        255,
+        340
+      ],
+      "has_alpha": true
+    },
+    {
+      "logical_name": "side_base",
+      "source_file": "sprites/侧面.png",
+      "reference_file": "assets/references/side_base.png",
+      "master_file": "assets/processed/masters/side_base.png",
+      "direction": "left",
+      "source_size": [
+        222,
+        340
+      ],
+      "master_size": [
+        222,
+        340
+      ],
+      "character_bbox": [
+        0,
+        0,
+        222,
+        340
+      ],
+      "has_alpha": true
+    },
+    {
+      "logical_name": "back_base",
+      "source_file": "sprites/背面.png",
+      "reference_file": "assets/references/back_base.png",
+      "master_file": "assets/processed/masters/back_base.png",
+      "direction": "back",
+      "source_size": [
+        253,
+        340
+      ],
+      "master_size": [
+        253,
+        340
+      ],
+      "character_bbox": [
+        0,
+        0,
+        253,
+        340
+      ],
+      "has_alpha": true
+    }
+  ]
+}

@@ -15,3 +15,39 @@ dist/
 __pycache__/
 *.pyc
 .coverage
+
+# 用户数据
+*.log
+logs/
+
+# IDE 缓存
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 操作系统
+Thumbs.db
+.DS_Store
+
+# 原始素材引用区（不随仓库分发）
+assets/source/
+
+# 原始付费姿势参考图（不随仓库分发）
+assets/references/
+
+# sprites 目录下的原始付费状态参考图（不随仓库分发）
+# 发呆.png、吃东西.png、开心.png、扫地.png、抓取.png、生气.png、眩晕.png、睡觉.png、被戳.png、说话.png
+/sprites/发呆.png
+/sprites/吃东西.png
+/sprites/开心.png
+/sprites/扫地.png
+/sprites/抓取.png
+/sprites/生气.png
+/sprites/眩晕.png
+/sprites/睡觉.png
+/sprites/被戳.png
+/sprites/说话.png
+
+# 临时预览 / 测试生成
+*.generated.png
