@@ -1,0 +1,356 @@
+{
+  "assets": [
+    {
+      "asset_id": "idle_think",
+      "action": "THINKING",
+      "source_file": "sprites/发呆.png",
+      "reference_file": "assets/references/state_sources/发呆.png",
+      "master_file": "assets/processed/masters/actions/idle_think.png",
+      "source_size": [
+        1663,
+        2218
+      ],
+      "master_size": [
+        1641,
+        2199
+      ],
+      "authorization": "user_authorized_paid_asset",
+      "extraction": {
+        "main_component_bbox": [
+          73,
+          69,
+          1602,
+          2134
+        ],
+        "selected_component_count": 251,
+        "detected_component_count": 2249,
+        "cropped_bbox": [
+          21,
+          17,
+          1662,
+          2216
+        ]
+      }
+    },
+    {
+      "asset_id": "happy",
+      "action": "HAPPY",
+      "source_file": "sprites/开心.png",
+      "reference_file": "assets/references/state_sources/开心.png",
+      "master_file": "assets/processed/masters/actions/happy.png",
+      "source_size": [
+        1663,
+        2218
+      ],
+      "master_size": [
+        1662,
+        2217
+      ],
+      "authorization": "user_authorized_paid_asset",
+      "extraction": {
+        "main_component_bbox": [
+          54,
+          33,
+          1611,
+          2164
+        ],
+        "selected_component_count": 288,
+        "detected_component_count": 1712,
+        "cropped_bbox": [
+          1,
+          0,
+          1663,
+          2217
+        ]
+      }
+    },
+    {
+      "asset_id": "talk",
+      "action": "TALKING",
+      "source_file": "sprites/说话.png",
+      "reference_file": "assets/references/state_sources/说话.png",
+      "master_file": "assets/processed/masters/actions/talk.png",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "master_size": [
+        2048,
+        2048
+      ],
+      "authorization": "user_authorized_paid_asset",
+      "extraction": {
+        "main_component_bbox": [
+          349,
+          0,
+          1824,
+          2040
+        ],
+        "selected_component_count": 1472,
+        "detected_component_count": 2861,
+        "cropped_bbox": [
+          0,
+          0,
+          2048,
+          2048
+        ]
+      }
+    },
+    {
+      "asset_id": "angry",
+      "action": "ANGRY",
+      "source_file": "sprites/生气.png",
+      "reference_file": "assets/references/state_sources/生气.png",
+      "master_file": "assets/processed/masters/actions/angry.png",
+      "source_size": [
+        1663,
+        2218
+      ],
+      "master_size": [
+        1659,
+        2200
+      ],
+      "authorization": "user_authorized_paid_asset",
+      "extraction": {
+        "main_component_bbox": [
+          55,
+          68,
+          1601,
+          2146
+        ],
+        "selected_component_count": 234,
+        "detected_component_count": 1638,
+        "cropped_bbox": [
+          3,
+          16,
+          1662,
+          2216
+        ]
+      }
+    },
+    {
+      "asset_id": "poke_react",
+      "action": "POKE_REACT",
+      "source_file": "sprites/被戳.png",
+      "reference_file": "assets/references/state_sources/被戳.png",
+      "master_file": "assets/processed/masters/actions/poke_react.png",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "master_size": [
+        1990,
+        2048
+      ],
+      "authorization": "user_authorized_paid_asset",
+      "extraction": {
+        "main_component_bbox": [
+          297,
+          18,
+          1751,
+          2018
+        ],
+        "selected_component_count": 219,
+        "detected_component_count": 2148,
+        "cropped_bbox": [
+          43,
+          0,
+          2033,
+          2048
+        ]
+      }
+    },
+    {
+      "asset_id": "eat",
+      "action": "EATING",
+      "source_file": "sprites/吃东西.png",
+      "reference_file": "assets/references/state_sources/吃东西.png",
+      "master_file": "assets/processed/masters/actions/eat.png",
+      "source_size": [
+        1663,
+        2218
+      ],
+      "master_size": [
+        1662,
+        2218
+      ],
+      "authorization": "user_authorized_paid_asset",
+      "extraction": {
+        "main_component_bbox": [
+          55,
+          36,
+          1602,
+          2186
+        ],
+        "selected_component_count": 270,
+        "detected_component_count": 1858,
+        "cropped_bbox": [
+          1,
+          0,
+          1663,
+          2218
+        ]
+      }
+    },
+    {
+      "asset_id": "sweep",
+      "action": "SWEEPING",
+      "source_file": "sprites/扫地.png",
+      "reference_file": "assets/references/state_sources/扫地.png",
+      "master_file": "assets/processed/masters/actions/sweep.png",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "master_size": [
+        2048,
+        2048
+      ],
+      "authorization": "user_authorized_paid_asset",
+      "extraction": {
+        "main_component_bbox": [
+          248,
+          32,
+          1776,
+          2048
+        ],
+        "selected_component_count": 851,
+        "detected_component_count": 1687,
+        "cropped_bbox": [
+          0,
+          0,
+          2048,
+          2048
+        ]
+      }
+    },
+    {
+      "asset_id": "sleep",
+      "action": "SLEEPING",
+      "source_file": "sprites/睡觉.png",
+      "reference_file": "assets/references/state_sources/睡觉.png",
+      "master_file": "assets/processed/masters/actions/sleep.png",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "master_size": [
+        1985,
+        1991
+      ],
+      "authorization": "user_authorized_paid_asset",
+      "extraction": {
+        "main_component_bbox": [
+          144,
+          320,
+          1944,
+          1768
+        ],
+        "selected_component_count": 284,
+        "detected_component_count": 1963,
+        "cropped_bbox": [
+          45,
+          38,
+          2030,
+          2029
+        ]
+      }
+    },
+    {
+      "asset_id": "dragging",
+      "action": "DRAGGING",
+      "source_file": "sprites/抓取.png",
+      "reference_file": "assets/references/state_sources/抓取.png",
+      "master_file": "assets/processed/masters/actions/dragging.png",
+      "source_size": [
+        1663,
+        2218
+      ],
+      "master_size": [
+        1643,
+        2218
+      ],
+      "authorization": "user_authorized_paid_asset",
+      "extraction": {
+        "main_component_bbox": [
+          132,
+          26,
+          1565,
+          1986
+        ],
+        "selected_component_count": 232,
+        "detected_component_count": 1620,
+        "cropped_bbox": [
+          20,
+          0,
+          1663,
+          2218
+        ]
+      }
+    },
+    {
+      "asset_id": "falling",
+      "action": "FALLING",
+      "source_file": "sprites/抓取.png",
+      "reference_file": "assets/references/state_sources/抓取.png",
+      "master_file": "assets/processed/masters/actions/falling.png",
+      "source_size": [
+        1663,
+        2218
+      ],
+      "master_size": [
+        1643,
+        2218
+      ],
+      "authorization": "user_authorized_paid_asset",
+      "extraction": {
+        "main_component_bbox": [
+          132,
+          26,
+          1565,
+          1986
+        ],
+        "selected_component_count": 232,
+        "detected_component_count": 1620,
+        "cropped_bbox": [
+          20,
+          0,
+          1663,
+          2218
+        ]
+      }
+    },
+    {
+      "asset_id": "dizzy",
+      "action": "DIZZY",
+      "source_file": "sprites/眩晕.png",
+      "reference_file": "assets/references/state_sources/眩晕.png",
+      "master_file": "assets/processed/masters/actions/dizzy.png",
+      "source_size": [
+        2048,
+        2048
+      ],
+      "master_size": [
+        1987,
+        2021
+      ],
+      "authorization": "user_authorized_paid_asset",
+      "extraction": {
+        "main_component_bbox": [
+          163,
+          88,
+          1977,
+          1984
+        ],
+        "selected_component_count": 308,
+        "detected_component_count": 2767,
+        "cropped_bbox": [
+          44,
+          11,
+          2031,
+          2032
+        ]
+      }
+    }
+  ]
+}
