@@ -15,6 +15,12 @@ jobs:
         python-version: ["3.11"]
       fail-fast: false
 
+    env:
+      # The app, the asset validator and several tests print Chinese text.
+      # On a Windows runner stdout is a pipe, so Python falls back to the ANSI
+      # code page (cp1252) and raises UnicodeEncodeError without this.
+      PYTHONUTF8: "1"
+
     steps:
       - uses: actions/checkout@v4
 
@@ -37,5 +43,8 @@ jobs:
       - name: Verify --version flag
         run: python main.py --version
 
+      # Block scalar: the inline form broke YAML parsing because the plain
+      # scalar contained a "colon + space" sequence inside the f-string.
       - name: Verify imports resolve correctly
-        run: python -c "from app.version import __version__; print(f'Version: {__version__}')"
+        run: |
+          python -c "from app.version import __version__; print(f'Version: {__version__}')"

@@ -5,7 +5,7 @@
 [![CI](https://github.com/QCYTSN/ds-local-pet/actions/workflows/test.yml/badge.svg)](https://github.com/QCYTSN/ds-local-pet/actions/workflows/test.yml)
 ![Windows](https://img.shields.io/badge/Windows-x64-blue)
 ![Python](https://img.shields.io/badge/Python-3.11+-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
+![Code License](https://img.shields.io/badge/Code%20License-MIT-green)
 
 <p align="center">
   <img src="assets/previews/gifs/walking.gif" alt="大肥鱼四帧侧向走路预览" width="260">
@@ -29,7 +29,7 @@ Windows 用户可以直接从 GitHub Releases 下载，无需安装 Python。
 - **鼠标互动** — 摸头、戳身体、拖拽甩开、双击投喂
 - **本地环境感知** — 可选感知前台窗口类型（编码、文档、视频等），仅读取本地元数据
 - **完全离线优先** — 所有台词和逻辑在本地运行，无需联网
-- **低资源占用** — 离屏绘制约 0.18 ms/帧，仅占 50 FPS 预算的 0.9%
+- **轻量常驻设计** — 运行时仅加载预处理角色素材，不加载本地模型、不截图、不访问网络
 - **本地人格和台词系统** — 四种人格语气，根据场景和互动给出不同回应
 
 ## 界面展示
@@ -129,7 +129,7 @@ python tools/measure_performance.py
 - [x] 四帧侧向行走
 - [x] 鼠标互动与拖拽
 - [x] 本地环境感知与隐私过滤
-- [ ] 更自然的自主行为（随机事件、AI 驱动选择）
+- [ ] 更自然的自主行为（状态驱动、随机事件、行为调度）
 - [ ] 体力与作息系统
 - [ ] 更多角色动作和随机事件
 - [ ] 声音反馈
@@ -137,7 +137,8 @@ python tools/measure_performance.py
 ## 素材与授权
 
 - 项目代码采用 **MIT License**（见 [LICENSE](LICENSE)）
-- 角色视觉资产的授权说明见 [ASSET_LICENSE.md](ASSET_LICENSE.md)
+- 角色视觉资产**不适用** MIT 代码许可证，来源与授权条件见 [ASSET_LICENSE.md](ASSET_LICENSE.md)
+- 原始参考素材（`assets/source/`、`assets/references/` 及付费姿势原图）不随本仓库或发行包分发
 - 上游代码来源见 [CREDITS.md](CREDITS.md)
 
 ## 致谢

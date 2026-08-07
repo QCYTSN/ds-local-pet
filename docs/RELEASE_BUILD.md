@@ -15,13 +15,16 @@ dist/
     ├── DS-Local-Pet-v0.1.0-win-x64.exe
     ├── icon.ico
     └── _internal/
-        ├── *.dll, *.pyd  (PyInstaller runtime)
-        ├── assets/
-        │   ├── manifests/
-        │   ├── dialogue/
-        │   ├── processed/runtime/
-        │   └── ...
-        └── ...
+        ├── *.dll, *.pyd, base_library.zip, PySide6/  (PyInstaller runtime)
+        ├── icon.ico
+        ├── sprites/
+        │   └── icon.png                  (tray icon)
+        └── assets/
+            ├── manifests/actions.json    (the only runtime manifest)
+            ├── dialogue/*.json
+            ├── app_categories.json
+            ├── privacy_rules.json
+            └── processed/runtime/states/ (runtime character frames)
 ```
 
 ## Build Tool: PyInstaller
@@ -57,34 +60,59 @@ dist/
 
 The version is read from `app/version.py` (`__version__ = "0.1.0"`). No manual duplication.
 
+## Packaging Policy: Whitelist Only
+
+The release contains **only what the running application actually reads**.
+`tools/build_release.py` copies an explicit whitelist
+(`RUNTIME_ASSET_DIRS` / `RUNTIME_ASSET_FILES`); it never copies a whole
+directory and then tries to delete parts of it afterwards.
+
 ## What Gets Bundled
 
-- All Python code and dependencies
-- Runtime character assets (`assets/processed/runtime/`)
-- Action manifests (`assets/manifests/`)
-- Dialogue files (`assets/dialogue/`)
-- App categories and privacy rules (`assets/app_categories.json`, `assets/privacy_rules.json`)
-- Icon
+| Path | Read by |
+|------|---------|
+| Python code + dependencies | PyInstaller |
+| `assets/manifests/actions.json` | `animation.asset_registry.AssetRegistry` |
+| `assets/processed/runtime/states/` | animation frame loading |
+| `assets/dialogue/*.json` | `dialogue.local_rules.DialogueManager` |
+| `assets/app_categories.json` | `behavior.classifier.AppClassifier` |
+| `assets/privacy_rules.json` | `awareness` privacy policy |
+| `sprites/icon.png` | `pet.window._create_tray` (system tray icon) |
+| `icon.ico` | shortcut / window icon |
+
+`actions.json` is the only manifest shipped. `character_spec.json`,
+`runtime_inventory.json`, `source_inventory.json`, `extraction_report.json`
+and `state_extraction_report.json` are development records and are not read
+at runtime.
 
 ## What Does NOT Get Bundled
 
-- Source sprites (`sprites/`)
+- Source sprites other than `sprites/icon.png` (paid / third-party reference art)
 - Reference assets (`assets/references/`, `assets/source/`)
 - Candidate/development assets (`assets/candidates/`)
 - Master processing files (`assets/processed/masters/`)
-- Test files
-- Development tools
-- Venv and build artifacts
-- User config files
+- Development manifests and extraction reports
+- Preview material (`assets/previews/`) — documentation only, never loaded at runtime
+- Test files, development tools, venv and build artifacts
+- User config files (`config.json`, `pet_state.json`)
 
 ## Verification
 
-After building, the script automatically checks:
+The build **fails and produces no zip** if any of these checks fail:
 
-- `DS-Local-Pet-v{VERSION}-win-x64.exe` exists
-- `assets/manifests/actions.json` is present
-- `assets/dialogue/` directory is present
-- `assets/processed/runtime/states/` directory is present
+1. `DS-Local-Pet-v{VERSION}-win-x64.exe` and root `icon.ico` exist
+2. `assets/manifests/actions.json`, `assets/app_categories.json`,
+   `assets/privacy_rules.json`, `sprites/icon.png` exist
+3. All nine dialogue JSON files exist
+4. PyInstaller runtime is complete (`python3*.dll`, `base_library.zip`, `PySide6/`)
+5. **Every frame path referenced by `actions.json` resolves inside the bundle**
+6. No forbidden content (dev manifests, references, source, candidates,
+   masters, tests, tools, `__pycache__`, user config, non-runtime sprites)
+7. No developer absolute path (project root, user home, `C:\Users\...`,
+   `D:\Github_Ku\...`) appears in any shipped text file
+8. The finished zip is re-checked against the same forbidden-content rules
+
+A missing optional extra (currently `_internal/icon.ico`) only prints a warning.
 
 Manual verification steps:
 

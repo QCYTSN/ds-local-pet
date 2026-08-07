@@ -364,9 +364,15 @@ def main() -> None:
     if not source_dir.is_dir():
         parser.error(f"找不到素材目录：{source_dir}")
     records = inventory(source_dir)
+    # Always record a repository-relative location: absolute developer paths
+    # must never end up in a committed or shipped manifest.
+    try:
+        source_label = source_dir.relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:
+        source_label = source_dir.name
     args.json_out.parent.mkdir(parents=True, exist_ok=True)
     args.json_out.write_text(
-        json.dumps({"source_directory": str(source_dir), "assets": records}, ensure_ascii=False, indent=2),
+        json.dumps({"source_directory": source_label, "assets": records}, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
     write_markdown(records, args.report_out)
