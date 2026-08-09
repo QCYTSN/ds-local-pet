@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import time
+from datetime import date
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -21,6 +22,11 @@ class PetState:
     annoyance: float = 0.04
     dizziness: float = 0.0
     total_feedings: int = 0
+    total_head_pats: int = 0
+    total_pokes: int = 0
+    total_drags: int = 0
+    sessions: int = 0
+    last_session_date: str = ""
     last_saved_at: float = 0.0
 
     def advance(self, seconds: float, *, activity: str = "idle") -> None:
@@ -78,27 +84,64 @@ class PetState:
         self.mood = _clamp(self.mood + 0.035)
         self.affinity = _clamp(self.affinity + 0.012)
         self.annoyance = _clamp(self.annoyance - 0.025)
+        self.total_head_pats += 1
 
-    def tap(self) -> None:
+    def tap(self, intensity: float = 1.0) -> None:
+        intensity = max(0.25, min(3.0, float(intensity)))
         self.boredom = _clamp(self.boredom - 0.018)
-        self.annoyance = _clamp(self.annoyance + 0.012)
+        self.annoyance = _clamp(self.annoyance + 0.012 * intensity)
+        self.total_pokes += 1
 
     def drag(self) -> None:
         self.dizziness = _clamp(self.dizziness + 0.06)
         self.annoyance = _clamp(self.annoyance + 0.018)
+        self.total_drags += 1
+
+    def begin_session(self, today: str | None = None) -> bool:
+        """Return True for the first launch seen on this calendar day."""
+        current = today or date.today().isoformat()
+        first_today = self.last_session_date != current
+        self.last_session_date = current
+        self.sessions += 1
+        return first_today
+
+    def visible_condition(self) -> str:
+        """Return a small presentation state instead of exposing raw meters."""
+
+        if self.energy < 0.30:
+            return "tired"
+        if self.annoyance >= 0.34:
+            return "annoyed"
+        if self.boredom >= 0.70:
+            return "restless"
+        if self.mood >= 0.78 and self.affinity >= 0.58:
+            return "cheerful"
+        if self.affinity >= 0.76:
+            return "affectionate"
+        return "steady"
 
     @classmethod
     def from_mapping(cls, raw: object) -> "PetState":
         state = cls()
         if not isinstance(raw, dict):
             return state
+        integer_fields = {
+            "total_feedings",
+            "total_head_pats",
+            "total_pokes",
+            "total_drags",
+            "sessions",
+        }
         for key in asdict(state):
             value = raw.get(key)
             if isinstance(value, (int, float)) and not isinstance(value, bool):
-                setattr(state, key, float(value) if key != "total_feedings" else int(value))
+                setattr(state, key, int(value) if key in integer_fields else float(value))
+        if isinstance(raw.get("last_session_date"), str):
+            state.last_session_date = str(raw["last_session_date"])
         for key in ("mood", "energy", "boredom", "affinity", "annoyance", "dizziness"):
             setattr(state, key, _clamp(getattr(state, key)))
-        state.total_feedings = max(0, int(state.total_feedings))
+        for key in integer_fields:
+            setattr(state, key, max(0, int(getattr(state, key))))
         return state
 
 
@@ -109,9 +152,10 @@ class PetStateStore:
         self.path = Path(path)
 
     def load(self) -> PetState:
-        try:
-            raw = json.loads(self.path.read_text(encoding="utf-8"))
-        except (OSError, ValueError, TypeError):
+        raw = self._read_mapping(self.path)
+        if not raw:
+            raw = self._read_mapping(self.path.with_suffix(self.path.suffix + ".bak"))
+        if not raw:
             return PetState()
         state = PetState.from_mapping(raw)
         if state.last_saved_at:
@@ -120,9 +164,24 @@ class PetStateStore:
 
     def save(self, state: PetState) -> None:
         state.last_saved_at = time.time()
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        backup = self.path.with_suffix(self.path.suffix + ".bak")
+        if self.path.is_file() and self._read_mapping(self.path):
+            try:
+                backup.write_bytes(self.path.read_bytes())
+            except OSError:
+                pass
         temporary = self.path.with_suffix(f"{self.path.suffix}.tmp")
         temporary.write_text(
             json.dumps(asdict(state), ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
         temporary.replace(self.path)
+
+    @staticmethod
+    def _read_mapping(path: Path) -> dict[str, object]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, TypeError):
+            return {}
+        return value if isinstance(value, dict) else {}

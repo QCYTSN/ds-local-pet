@@ -26,6 +26,11 @@ def _panel() -> PetControlPanel:
         on_fullscreen_hide=lambda _enabled: None,
         on_passthrough=lambda _enabled: None,
         on_autostart=lambda _enabled: None,
+        on_activity_level=lambda _level: None,
+        on_walk_speed=lambda _speed: None,
+        on_reduced_motion=lambda _enabled: None,
+        on_hover_pause=lambda _enabled: None,
+        on_desktop_surfaces=lambda _enabled: None,
         on_action=lambda _action: None,
         on_hide=lambda: None,
         on_privacy=lambda: None,
@@ -60,6 +65,11 @@ class CompactControlPanelTests(unittest.TestCase):
                 fullscreen_hide=False,
                 passthrough=False,
                 autostart=False,
+                activity_level="balanced",
+                walk_speed=82.0,
+                reduced_motion=False,
+                hover_pause=True,
+                desktop_surfaces=True,
                 state_name="待机",
             )
             area = self.application.primaryScreen().availableGeometry()

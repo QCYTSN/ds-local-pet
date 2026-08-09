@@ -47,6 +47,10 @@ class PetRenderer:
         self.bubble_font = QFont()
         self.bubble_font.setPointSize(10)
         self.bubble_font.setWeight(QFont.Weight.DemiBold)
+        self.reduced_motion = False
+
+    def set_reduced_motion(self, enabled: bool) -> None:
+        self.reduced_motion = bool(enabled)
 
     def paint(self, widget, *, snapshot: PlayerSnapshot, bubble: Bubble) -> None:
         painter = QPainter(widget)
@@ -57,7 +61,7 @@ class PetRenderer:
 
         if snapshot.current is None:
             return
-        pose = pose_for(snapshot.effect, snapshot.elapsed_seconds)
+        pose = EffectPose() if self.reduced_motion else pose_for(snapshot.effect, snapshot.elapsed_seconds)
         floor = QPointF(widget.width() / 2.0, widget.height() - self.margin - 7.0)
         current_anchor = self._render_anchor(widget, snapshot.current)
         self._draw_shadow(painter, floor, snapshot.current, pose)
@@ -70,7 +74,8 @@ class PetRenderer:
                 snapshot.previous_opacity,
             )
         self._draw_layer(painter, snapshot.current, current_anchor, pose, snapshot.current_opacity)
-        self._draw_decoration(painter, current_anchor, snapshot.current, pose, snapshot.elapsed_seconds)
+        if not self.reduced_motion:
+            self._draw_decoration(painter, current_anchor, snapshot.current, pose, snapshot.elapsed_seconds)
 
     def _render_anchor(self, widget, layer: RenderLayer) -> QPointF:
         """Keep non-standing actions inside the allocated sprite slot.
@@ -129,7 +134,7 @@ class PetRenderer:
         painter.restore()
 
     def _draw_bubble(self, painter: QPainter, width: int, bubble: Bubble) -> None:
-        opacity = bubble.opacity_at()
+        opacity = 1.0 if self.reduced_motion and bubble.visible else bubble.opacity_at()
         if opacity <= 0:
             return
         font = QFont(self.bubble_font)

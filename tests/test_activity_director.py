@@ -9,6 +9,7 @@ from behavior.activity_director import (
     ActivityCueType,
     ActivityDirector,
     ActivityKind,
+    MicroMotionDirector,
 )
 from pet.state import PetState
 
@@ -147,12 +148,8 @@ class ActivityDirectorTests(unittest.TestCase):
         self.assertEqual(waking.action, PetAction.HAPPY)
         self.assertEqual(completed.cue_type, ActivityCueType.COMPLETE)
 
-    def test_one_hour_simulation_stays_varied_and_not_mostly_static(self) -> None:
-        director = ActivityDirector(
-            random.Random(11),
-            initial_delay_range=(0.0, 0.0),
-            decision_delay_range=(4.0, 9.0),
-        )
+    def test_one_hour_simulation_stays_varied_without_becoming_restless(self) -> None:
+        director = ActivityDirector(random.Random(11))
         state = PetState()
         completed: list[ActivityKind] = []
         active_ticks = 0
@@ -188,11 +185,38 @@ class ActivityDirectorTests(unittest.TestCase):
         counts = Counter(completed)
         active_share = active_ticks / int(3600.0 / step)
         self.assertGreaterEqual(len(counts), 5)
-        self.assertGreater(len(completed), 80)
-        self.assertGreater(active_share, 0.30)
-        self.assertLess(active_share, 0.72)
+        self.assertGreaterEqual(len(completed), 24)
+        self.assertLessEqual(len(completed), 70)
+        self.assertGreater(active_share, 0.035)
+        self.assertLess(active_share, 0.26)
         self.assertTrue(all(left != right for left, right in zip(completed, completed[1:])))
         self.assertLess(max(counts.values()) / len(completed), 0.45)
+
+    def test_activity_level_changes_the_wait_between_full_activities(self) -> None:
+        calm = ActivityDirector(random.Random(21), activity_level="calm")
+        lively = ActivityDirector(random.Random(21), activity_level="lively")
+
+        calm._schedule_next(100.0)
+        lively._schedule_next(100.0)
+
+        self.assertGreater(calm._next_decision_at, lively._next_decision_at)
+
+
+class MicroMotionDirectorTests(unittest.TestCase):
+    def test_micro_motion_is_separate_and_reduced_motion_uses_blinks_only(self) -> None:
+        director = MicroMotionDirector(random.Random(4), activity_level="lively")
+        state = PetState(boredom=1.0, affinity=1.0)
+        director._next_at = 0.0
+
+        action = director.update(
+            now=1.0,
+            state=state,
+            can_start=True,
+            reduced_motion=True,
+        )
+
+        self.assertEqual(action, PetAction.BLINK)
+        self.assertGreater(director._next_at, 1.0)
 
 
 class PetActivityStateTests(unittest.TestCase):

@@ -10,9 +10,11 @@ This produces:
 
 ```
 dist/
-├── DS-Local-Pet-v0.1.0-win-x64.zip
-└── DS-Local-Pet-v0.1.0-win-x64/
-    ├── DS-Local-Pet-v0.1.0-win-x64.exe
+├── DS-Local-Pet-Setup-v0.2.0.exe
+├── DS-Local-Pet-Setup-v0.2.0.exe.sha256
+├── DS-Local-Pet-v0.2.0-win-x64.zip
+└── DS-Local-Pet-v0.2.0-win-x64/
+    ├── DS-Local-Pet-v0.2.0-win-x64.exe
     ├── icon.ico
     └── _internal/
         ├── *.dll, *.pyd, base_library.zip, PySide6/  (PyInstaller runtime)
@@ -55,10 +57,11 @@ dist/
 - Windows x64
 - Dependencies installed via `pip install -r requirements.txt`
 - PyInstaller (auto-installed by the build script)
+- Inno Setup 6+ (`ISCC.exe`) when compiling the installer
 
 ## Version
 
-The version is read from `app/version.py` (`__version__ = "0.1.0"`). No manual duplication.
+The version is read from `app/version.py` (`__version__ = "0.2.0"`). No manual duplication.
 
 ## Packaging Policy: Whitelist Only
 
@@ -103,7 +106,7 @@ The build **fails and produces no zip** if any of these checks fail:
 1. `DS-Local-Pet-v{VERSION}-win-x64.exe` and root `icon.ico` exist
 2. `assets/manifests/actions.json`, `assets/app_categories.json`,
    `assets/privacy_rules.json`, `sprites/icon.png` exist
-3. All nine dialogue JSON files exist
+3. All twelve dialogue JSON files exist
 4. PyInstaller runtime is complete (`python3*.dll`, `base_library.zip`, `PySide6/`)
 5. **Every frame path referenced by `actions.json` resolves inside the bundle**
 6. No forbidden content (dev manifests, references, source, candidates,
@@ -121,3 +124,29 @@ Manual verification steps:
 3. Click the tray icon — should toggle visibility
 4. Launch the exe again — should activate the existing instance (single-instance check)
 5. Verify animations play correctly (walk, idle, happy, etc.)
+
+## Installer
+
+After the onedir bundle has passed verification:
+
+```powershell
+.\.venv\Scripts\python.exe tools\build_installer.py --skip-bundle
+```
+
+The Inno Setup definition installs for the current user under
+`%LOCALAPPDATA%\Programs\DaFeiYuDesktopPet`, creates a Start Menu shortcut and
+offers an optional desktop shortcut. The versioned portable executable is
+renamed to the stable installed path `DaFeiYuDesktopPet.exe`, so shortcuts and
+autostart survive upgrades. Uninstall removes program files but intentionally
+keeps `%LOCALAPPDATA%\DaFeiYuDesktopPet` user state.
+
+## GitHub Release Contract
+
+Pushing a tag matching `app.version.VERSION` (for example `v0.2.0`) runs
+`.github/workflows/release.yml`. It tests, builds and uploads exactly three
+artifacts: the installer, its `.sha256` sidecar and the portable zip.
+
+The application updater only accepts a unique installer named
+`DS-Local-Pet-Setup-v{VERSION}.exe` from this repository's latest GitHub
+Release. It requires the asset SHA-256 digest returned by GitHub and verifies
+the entire download before offering installation.

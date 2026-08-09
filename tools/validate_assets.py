@@ -39,6 +39,17 @@ def main() -> None:
         type=Path,
         default=PROJECT_ROOT / "assets" / "candidates" / "walk_side" / "candidate_a",
     )
+    parser.add_argument(
+        "--landing-candidate-dir",
+        type=Path,
+        default=(
+            PROJECT_ROOT
+            / "assets"
+            / "candidates"
+            / "state_actions"
+            / "candidate_e_throw_landing"
+        ),
+    )
     args = parser.parse_args()
     actions = load_json(args.actions)
     problems: list[str] = []
@@ -74,6 +85,17 @@ def main() -> None:
         anchor = action.get("anchor", {})
         if not 0 <= float(anchor.get("x", -1)) <= 1 or not 0 <= float(anchor.get("y", -1)) <= 1:
             problems.append(f"{action_id} 的 anchor 超出 0..1。")
+        transition = action.get("transition", {})
+        if isinstance(transition, dict):
+            for phase in ("enter", "exit"):
+                segment = transition.get(phase)
+                if not isinstance(segment, dict):
+                    continue
+                segment_asset = segment.get("asset")
+                if segment_asset not in assets:
+                    problems.append(f"{action_id}.{phase} 引用了未定义资源：{segment_asset}")
+                if int(segment.get("duration_ms", 0)) <= 0:
+                    problems.append(f"{action_id}.{phase} 缺少有效 duration_ms。")
 
     walking = actions.get("actions", {}).get("WALKING", {})
     walk_asset = assets.get(walking.get("asset"), {}) if isinstance(walking, dict) else {}
@@ -102,13 +124,34 @@ def main() -> None:
         if not preview.is_file():
             problems.append("走路候选缺少 8 FPS GIF 预览。")
 
+    falling = actions.get("actions", {}).get("FALLING", {})
+    if not falling.get("loop") or falling.get("duration_ms") is not None:
+        problems.append("FALLING 必须由物理层结束，不能使用固定动作超时。")
+
+    landing = actions.get("actions", {}).get("LANDING", {})
+    landing_asset = assets.get(landing.get("asset"), {}) if isinstance(landing, dict) else {}
+    if str(landing.get("quality")) != "formal_unified_generated_landing_frames":
+        problems.append("LANDING 没有标记为正式统一角色落地帧。")
+    if isinstance(landing_asset, dict) and int(landing_asset.get("frame_count", 0)) < 2:
+        problems.append("landing 至少需要冲击和恢复两张帧。")
+
+    landing_metadata = args.landing_candidate_dir / "candidate.json"
+    if not landing_metadata.is_file():
+        problems.append("缺少落地动作候选元数据。")
+    else:
+        candidate = load_json(landing_metadata)
+        if candidate.get("review_only") is not False or candidate.get("formal_runtime") is not True:
+            problems.append("落地动作候选未标记为 formal_runtime。")
+        for frame_name in candidate.get("frames", []):
+            inspect_alpha(args.landing_candidate_dir / str(frame_name), "落地动作候选", problems)
+
     if problems:
         print("素材校验失败：")
         print("\n".join(f"- {problem}" for problem in problems))
         raise SystemExit(1)
     print(
         f"素材校验通过：{len(assets)} 个资产，"
-        f"{len(actions.get('actions', {}))} 个动作，走路为正式四帧循环。"
+        f"{len(actions.get('actions', {}))} 个动作，走路和落地动作协议有效。"
     )
 
 

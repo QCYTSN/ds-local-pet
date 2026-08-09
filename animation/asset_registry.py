@@ -7,7 +7,16 @@ from pathlib import Path
 
 from PySide6.QtGui import QPixmap
 
-from .clip import ActionSpec, Anchor, AnimationClip, ClipFrame, PetAction
+from .clip import (
+    ActionSpec,
+    Anchor,
+    AnimationClip,
+    AnimationPhase,
+    AnimationProgram,
+    ClipFrame,
+    ClipSegmentSpec,
+    PetAction,
+)
 
 
 class AssetRegistry:
@@ -34,6 +43,9 @@ class AssetRegistry:
             anchor_raw = raw.get("anchor", {})
             if not isinstance(anchor_raw, dict):
                 anchor_raw = {}
+            transition_raw = raw.get("transition", {})
+            if not isinstance(transition_raw, dict):
+                transition_raw = {}
             specs[action] = ActionSpec(
                 action=action,
                 asset_id=str(raw["asset"]),
@@ -50,8 +62,24 @@ class AssetRegistry:
                 effect=str((raw.get("procedural_motion") or {}).get("type", "breath")),
                 quality=str(raw.get("quality", "placeholder")),
                 requires_real_frames=bool(raw.get("requires_real_frames", False)),
+                enter=self._parse_segment(transition_raw.get("enter")),
+                exit=self._parse_segment(transition_raw.get("exit")),
             )
         return specs
+
+    @staticmethod
+    def _parse_segment(raw: object) -> ClipSegmentSpec | None:
+        if not isinstance(raw, dict) or not raw.get("asset"):
+            return None
+        duration = raw.get("duration_ms")
+        if not isinstance(duration, int) or duration <= 0:
+            return None
+        effect = raw.get("effect")
+        return ClipSegmentSpec(
+            asset_id=str(raw["asset"]),
+            duration_ms=duration,
+            effect=str(effect) if effect else None,
+        )
 
     def clip_for(self, action: PetAction | str, *, height: int, direction: str) -> AnimationClip:
         action = PetAction.coerce(action)
@@ -70,18 +98,71 @@ class AssetRegistry:
             effect=spec.effect,
             quality=spec.quality,
             requires_real_frames=spec.requires_real_frames,
-            # The supplied side master faces left; mirror only when moving right.
-            mirrored=asset_id.startswith("walk_side") and direction == "right",
+            # Left and right locomotion art is authored independently.
+            mirrored=self._should_mirror(asset_id, direction),
         )
+
+    def program_for(self, action: PetAction | str, *, height: int, direction: str) -> AnimationProgram:
+        action = PetAction.coerce(action)
+        spec = self.specs[action]
+        body = self.clip_for(action, height=height, direction=direction)
+        return AnimationProgram(
+            action=action,
+            body=body,
+            enter=self._segment_clip(spec, spec.enter, AnimationPhase.ENTER, height, direction),
+            exit=self._segment_clip(spec, spec.exit, AnimationPhase.EXIT, height, direction),
+        )
+
+    def _segment_clip(
+        self,
+        spec: ActionSpec,
+        segment: ClipSegmentSpec | None,
+        phase: AnimationPhase,
+        height: int,
+        direction: str,
+    ) -> AnimationClip | None:
+        if segment is None:
+            return None
+        asset_id = self._directional_transition_asset(segment.asset_id, direction)
+        frames, _selected_size = self._frames_for(asset_id, height)
+        return AnimationClip(
+            action=spec.action,
+            asset_id=asset_id,
+            frames=frames,
+            loop=False,
+            duration_ms=segment.duration_ms,
+            frame_duration_ms=max(55, segment.duration_ms // max(1, len(frames))),
+            anchor=spec.anchor,
+            effect=segment.effect or spec.effect,
+            quality=spec.quality,
+            requires_real_frames=spec.requires_real_frames,
+            mirrored=self._should_mirror(segment.asset_id, direction),
+            phase=phase,
+        )
+
+    @staticmethod
+    def _should_mirror(asset_id: str, direction: str) -> bool:
+        # Directional walking art is authored separately so asymmetric hair,
+        # bow and apron details never jump sides.
+        return False
+
+    @staticmethod
+    def _directional_transition_asset(asset_id: str, direction: str) -> str:
+        if direction == "right" and asset_id.endswith("_left"):
+            return asset_id[:-5] + "_right"
+        return asset_id
 
     @staticmethod
     def _asset_for(action: PetAction, default_asset: str, direction: str) -> str:
         if action in {PetAction.IDLE, PetAction.THINKING}:
             return "idle_back" if direction == "up" else ("idle_think" if action == PetAction.THINKING else "idle_front")
-        if action == PetAction.WALKING and direction == "up":
-            return "idle_back"
-        if action == PetAction.WALKING and direction == "down":
-            return "idle_front"
+        if action == PetAction.WALKING:
+            if direction == "up":
+                return "idle_back"
+            if direction == "down":
+                return "idle_front"
+            if direction == "right":
+                return "walk_side_right"
         return default_asset
 
     def _frames_for(self, asset_id: str, height: int) -> tuple[tuple[ClipFrame, ...], int]:

@@ -85,6 +85,9 @@ REQUIRED_DIALOGUE_FILES = (
     "inner_voice.json",
     "interaction.json",
     "late_night.json",
+    "relationship.json",
+    "routine.json",
+    "state.json",
     "video.json",
 )
 
@@ -131,6 +134,12 @@ ALLOWED_SPRITE_FILES = {"icon.png"}
 JUNK_DIR_NAMES = {"__pycache__", ".git", ".venv", ".idea", ".vscode"}
 JUNK_FILE_NAMES = {"Thumbs.db", ".DS_Store", "config.json", "pet_state.json"}
 JUNK_FILE_SUFFIXES = {".pyc", ".pyo", ".tmp", ".log"}
+
+# Qt 6.11 imports the Windows-provided ``icuuc.dll``.  When Anaconda is on
+# PATH, PyInstaller can accidentally copy Anaconda's unrelated ICU runtime
+# into ``_internal``.  The local DLL then shadows the Windows system DLL and
+# QtCore fails to load with WinError 127 ("procedure not found").
+UNSAFE_QT_SHADOW_DLL_PATTERNS = ("icuuc.dll", "icudt*.dll")
 
 # ---- developer path leak detection ---------------------------------------
 
@@ -242,6 +251,21 @@ def _strip_build_junk() -> None:
         print("  Nothing to strip.")
 
 
+def _remove_unsafe_qt_shadow_dlls() -> None:
+    """Remove foreign ICU DLLs that can shadow the Windows Qt dependency."""
+    internal = RELEASE_DIR / INTERNAL_SUBDIR
+    removed: list[str] = []
+    for pattern in UNSAFE_QT_SHADOW_DLL_PATTERNS:
+        for path in sorted(internal.glob(pattern)):
+            if path.is_file():
+                path.unlink()
+                removed.append(path.name)
+    if removed:
+        print("  Removed unsafe Qt shadow DLLs: " + ", ".join(removed))
+    else:
+        print("  No unsafe Qt shadow DLLs found.")
+
+
 def _rel_paths(root: Path) -> list[str]:
     return [p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()]
 
@@ -329,6 +353,21 @@ def _verify_bundle() -> None:
         )
     else:
         print("  [OK]      PyInstaller runtime (python3*.dll, base_library.zip, PySide6/)")
+
+    # A foreign unversioned ICU next to the executable shadows the Windows
+    # runtime expected by this PySide6 wheel and makes QtWidgets unloadable.
+    qt_shadow_dlls = [
+        path.relative_to(RELEASE_DIR).as_posix()
+        for pattern in UNSAFE_QT_SHADOW_DLL_PATTERNS
+        for path in internal.glob(pattern)
+        if path.is_file()
+    ]
+    if qt_shadow_dlls:
+        errors.append(
+            "Qt runtime contains unsafe shadow DLLs: " + ", ".join(qt_shadow_dlls)
+        )
+    else:
+        print("  [OK]      no unsafe Qt shadow DLLs")
 
     # 4. Every frame referenced by actions.json must exist in the bundle
     actions_path = internal / "assets" / "manifests" / "actions.json"
@@ -465,7 +504,10 @@ def main() -> None:
     print("\nCopying runtime assets (whitelist)...")
     _copy_runtime_assets()
 
-    # Step 5: Strip build junk
+    # Step 5: Remove build-environment DLL contamination, then strip junk
+    print("\nChecking Qt runtime DLLs...")
+    _remove_unsafe_qt_shadow_dlls()
+
     print("\nStripping build junk...")
     _strip_build_junk()
 

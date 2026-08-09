@@ -41,6 +41,11 @@ class PetControlPanel(QWidget):
         on_fullscreen_hide: Callable[[bool], None],
         on_passthrough: Callable[[bool], None],
         on_autostart: Callable[[bool], None],
+        on_activity_level: Callable[[str], None],
+        on_walk_speed: Callable[[float], None],
+        on_reduced_motion: Callable[[bool], None],
+        on_hover_pause: Callable[[bool], None],
+        on_desktop_surfaces: Callable[[bool], None],
         on_action: Callable[[str], None],
         on_hide: Callable[[], None],
         on_privacy: Callable[[], None],
@@ -57,8 +62,12 @@ class PetControlPanel(QWidget):
         self.setFixedWidth(258)
         self._mode_buttons: dict[str, QToolButton] = {}
         self._size_buttons: dict[float, QToolButton] = {}
+        self._activity_buttons: dict[str, QToolButton] = {}
+        self._speed_buttons: dict[float, QToolButton] = {}
         self._mode_group = QButtonGroup(self)
         self._size_group = QButtonGroup(self)
+        self._activity_group = QButtonGroup(self)
+        self._speed_group = QButtonGroup(self)
         self._expanded = False
         self._pet_rect: QRect | None = None
 
@@ -165,6 +174,32 @@ class PetControlPanel(QWidget):
         action_row.addStretch(1)
         advanced_layout.addLayout(action_row)
 
+        rhythm_label = QLabel("陪伴节奏")
+        rhythm_label.setObjectName("compactLabel")
+        advanced_layout.addWidget(rhythm_label)
+        rhythm_row = QHBoxLayout()
+        rhythm_row.setSpacing(5)
+        for label, value in (("安静", "calm"), ("适中", "balanced"), ("活泼", "lively")):
+            button = self._choice_button(label)
+            button.clicked.connect(lambda _checked=False, key=value: on_activity_level(key))
+            self._activity_group.addButton(button)
+            self._activity_buttons[value] = button
+            rhythm_row.addWidget(button)
+        advanced_layout.addLayout(rhythm_row)
+
+        speed_label = QLabel("走路速度")
+        speed_label.setObjectName("compactLabel")
+        advanced_layout.addWidget(speed_label)
+        speed_row = QHBoxLayout()
+        speed_row.setSpacing(5)
+        for label, value in (("慢", 64.0), ("适中", 82.0), ("快", 104.0)):
+            button = self._choice_button(label)
+            button.clicked.connect(lambda _checked=False, speed=value: on_walk_speed(speed))
+            self._speed_group.addButton(button)
+            self._speed_buttons[value] = button
+            speed_row.addWidget(button)
+        advanced_layout.addLayout(speed_row)
+
         self.awareness = self._toggle("本地感知", on_awareness)
         self.topmost = self._toggle("窗口置顶", on_topmost)
         self.read_window_title = self._toggle("读取标题", on_read_window_title)
@@ -172,6 +207,9 @@ class PetControlPanel(QWidget):
         self.idle_detection = self._toggle("检测空闲", on_idle_detection)
         self.passthrough = self._toggle("鼠标穿透", on_passthrough)
         self.autostart = self._toggle("开机自启", on_autostart)
+        self.reduced_motion = self._toggle("减少动态", on_reduced_motion)
+        self.hover_pause = self._toggle("悬停暂停", on_hover_pause)
+        self.desktop_surfaces = self._toggle("窗口落脚", on_desktop_surfaces)
         toggle_grid = QGridLayout()
         toggle_grid.setHorizontalSpacing(10)
         toggle_grid.setVerticalSpacing(2)
@@ -184,6 +222,9 @@ class PetControlPanel(QWidget):
                 self.idle_detection,
                 self.passthrough,
                 self.autostart,
+                self.reduced_motion,
+                self.hover_pause,
+                self.desktop_surfaces,
             )
         ):
             toggle_grid.addWidget(toggle, index // 2, index % 2)
@@ -296,12 +337,21 @@ class PetControlPanel(QWidget):
         fullscreen_hide: bool,
         passthrough: bool,
         autostart: bool,
+        activity_level: str,
+        walk_speed: float,
+        reduced_motion: bool,
+        hover_pause: bool,
+        desktop_surfaces: bool,
         state_name: str,
     ) -> None:
         if mode in self._mode_buttons:
             self._mode_buttons[mode].setChecked(True)
         closest_size = min(self._size_buttons, key=lambda value: abs(value - size))
         self._size_buttons[closest_size].setChecked(True)
+        if activity_level in self._activity_buttons:
+            self._activity_buttons[activity_level].setChecked(True)
+        closest_speed = min(self._speed_buttons, key=lambda value: abs(value - walk_speed))
+        self._speed_buttons[closest_speed].setChecked(True)
         self.awareness.setChecked(awareness)
         self.read_window_title.setChecked(read_window_title)
         self.idle_detection.setChecked(idle_detection)
@@ -309,6 +359,9 @@ class PetControlPanel(QWidget):
         self.fullscreen_hide.setChecked(fullscreen_hide)
         self.passthrough.setChecked(passthrough)
         self.autostart.setChecked(autostart)
+        self.reduced_motion.setChecked(reduced_motion)
+        self.hover_pause.setChecked(hover_pause)
+        self.desktop_surfaces.setChecked(desktop_surfaces)
         self.state_label.setText(state_name)
 
     def popup_near_pet(self, pet_rect: QRect) -> None:

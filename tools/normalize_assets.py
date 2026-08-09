@@ -30,16 +30,51 @@ class AssetSource:
 
 
 # ``unified_generated_v1`` is the single art family produced from the same
-# green-screen character reference.  The three clean original views remain
-# the canonical direction references for idle/front/back only.
+# green-screen character reference.  The clean original views remain identity
+# and direction references; the visible front idle now shares the exact first
+# frame used by the micro animations so a blink cannot cause a style pop.
 ASSET_SOURCES: dict[str, AssetSource] = {
-    "idle_front": AssetSource(("assets/processed/masters/front_base.png",), "clean_base_view"),
+    "idle_front": AssetSource(
+        (
+            "assets/candidates/state_actions/candidate_f_life_motion/idle_micro/idle_micro_00.png",
+        ),
+        "formal_unified_generated_idle_base",
+        generated=True,
+    ),
+    "idle_blink": AssetSource(
+        (
+            "assets/candidates/state_actions/candidate_f_life_motion/idle_micro/idle_micro_00.png",
+            "assets/candidates/state_actions/candidate_f_life_motion/idle_micro/idle_micro_01.png",
+            "assets/candidates/state_actions/candidate_f_life_motion/idle_micro/idle_micro_02.png",
+            "assets/candidates/state_actions/candidate_f_life_motion/idle_micro/idle_micro_01.png",
+            "assets/candidates/state_actions/candidate_f_life_motion/idle_micro/idle_micro_00.png",
+        ),
+        "formal_unified_generated_micro_frames",
+        generated=True,
+    ),
+    "idle_glance": AssetSource(
+        (
+            "assets/candidates/state_actions/candidate_f_life_motion/idle_micro/idle_micro_00.png",
+            "assets/candidates/state_actions/candidate_f_life_motion/idle_micro/idle_micro_04.png",
+            "assets/candidates/state_actions/candidate_f_life_motion/idle_micro/idle_micro_04.png",
+            "assets/candidates/state_actions/candidate_f_life_motion/idle_micro/idle_micro_00.png",
+            "assets/candidates/state_actions/candidate_f_life_motion/idle_micro/idle_micro_05.png",
+            "assets/candidates/state_actions/candidate_f_life_motion/idle_micro/idle_micro_05.png",
+            "assets/candidates/state_actions/candidate_f_life_motion/idle_micro/idle_micro_00.png",
+        ),
+        "formal_unified_generated_micro_frames",
+        generated=True,
+    ),
     "idle_think": AssetSource(
         ("assets/candidates/state_actions/candidate_c_daily/idle_think.png",),
         "formal_unified_generated_action",
         generated=True,
     ),
     "idle_back": AssetSource(("assets/processed/masters/back_base.png",), "clean_base_view"),
+    "walk_side_stand": AssetSource(
+        ("assets/processed/masters/side_base.png",),
+        "clean_base_view",
+    ),
     "walk_side": AssetSource(
         tuple(
             f"assets/candidates/walk_side/candidate_a/walk_side_{index:02d}.png"
@@ -48,9 +83,57 @@ ASSET_SOURCES: dict[str, AssetSource] = {
         "formal_unified_generated_walk_frames",
         generated=True,
     ),
+    "walk_side_right": AssetSource(
+        tuple(
+            f"assets/candidates/state_actions/candidate_g_motion2/walk_right/walk_right_{index:02d}.png"
+            for index in range(4)
+        ),
+        "formal_unified_generated_walk_frames_directional",
+        generated=True,
+    ),
+    "walk_start_left": AssetSource(
+        tuple(
+            f"assets/candidates/state_actions/candidate_g_motion2/walk_transition/walk_transition_{index:02d}.png"
+            for index in (0, 1)
+        ),
+        "formal_unified_generated_locomotion_transition",
+        generated=True,
+    ),
+    "walk_stop_left": AssetSource(
+        tuple(
+            f"assets/candidates/state_actions/candidate_g_motion2/walk_transition/walk_transition_{index:02d}.png"
+            for index in (2, 0)
+        ),
+        "formal_unified_generated_locomotion_transition",
+        generated=True,
+    ),
+    "walk_start_right": AssetSource(
+        tuple(
+            f"assets/candidates/state_actions/candidate_g_motion2/walk_transition/walk_transition_{index:02d}.png"
+            for index in (3, 4)
+        ),
+        "formal_unified_generated_locomotion_transition",
+        generated=True,
+    ),
+    "walk_stop_right": AssetSource(
+        tuple(
+            f"assets/candidates/state_actions/candidate_g_motion2/walk_transition/walk_transition_{index:02d}.png"
+            for index in (5, 3)
+        ),
+        "formal_unified_generated_locomotion_transition",
+        generated=True,
+    ),
     "happy": AssetSource(
         ("assets/candidates/state_actions/candidate_b_core/happy.png",),
         "formal_unified_generated_action",
+        generated=True,
+    ),
+    "head_pat": AssetSource(
+        tuple(
+            f"assets/candidates/state_actions/candidate_f_life_motion/head_pat/head_pat_{index:02d}.png"
+            for index in range(6)
+        ),
+        "formal_unified_generated_interaction_frames",
         generated=True,
     ),
     "talk": AssetSource(
@@ -64,13 +147,27 @@ ASSET_SOURCES: dict[str, AssetSource] = {
         generated=True,
     ),
     "poke_react": AssetSource(
-        ("assets/candidates/state_actions/candidate_b_core/poke_react.png",),
-        "formal_unified_generated_action",
+        tuple(
+            f"assets/candidates/state_actions/candidate_f_life_motion/poke_react/poke_react_{index:02d}.png"
+            for index in range(4)
+        ),
+        "formal_unified_generated_interaction_frames",
+        generated=True,
+    ),
+    "tail_react": AssetSource(
+        tuple(
+            f"assets/candidates/state_actions/candidate_g_motion2/tail_react/tail_react_{index:02d}.png"
+            for index in range(4)
+        ),
+        "formal_unified_generated_interaction_frames",
         generated=True,
     ),
     "eat": AssetSource(
-        ("assets/candidates/state_actions/candidate_b_core/eat.png",),
-        "formal_unified_generated_action",
+        tuple(
+            f"assets/candidates/state_actions/candidate_g_motion2/daily_transition/daily_transition_{index:02d}.png"
+            for index in (3, 4, 5)
+        ),
+        "formal_unified_generated_daily_frames",
         generated=True,
     ),
     "sweep": AssetSource(
@@ -80,9 +177,27 @@ ASSET_SOURCES: dict[str, AssetSource] = {
     ),
     # Reclining and seated states intentionally occupy less vertical space.
     "sleep": AssetSource(
-        ("assets/candidates/state_actions/candidate_c_daily/sleep.png",),
-        "formal_unified_generated_action",
+        ("assets/candidates/state_actions/candidate_g_motion2/daily_transition/daily_transition_02.png",),
+        "formal_unified_generated_sleep_base",
         visual_scale=0.73,
+        generated=True,
+    ),
+    "sleep_enter": AssetSource(
+        tuple(
+            f"assets/candidates/state_actions/candidate_g_motion2/daily_transition/daily_transition_{index:02d}.png"
+            for index in (0, 1, 2)
+        ),
+        "formal_unified_generated_sleep_transition",
+        visual_scale=0.78,
+        generated=True,
+    ),
+    "sleep_wake": AssetSource(
+        tuple(
+            f"assets/candidates/state_actions/candidate_g_motion2/daily_transition/daily_transition_{index:02d}.png"
+            for index in (2, 1, 0)
+        ),
+        "formal_unified_generated_sleep_transition",
+        visual_scale=0.78,
         generated=True,
     ),
     "dizzy": AssetSource(
@@ -101,6 +216,22 @@ ASSET_SOURCES: dict[str, AssetSource] = {
         ("assets/candidates/state_actions/candidate_d_interactions/falling.png",),
         "formal_unified_generated_action",
         visual_scale=0.94,
+        generated=True,
+    ),
+    "released_airborne": AssetSource(
+        ("assets/candidates/state_actions/candidate_e_throw_landing/released_airborne.png",),
+        "formal_unified_generated_throw_transition",
+        visual_scale=0.94,
+        generated=True,
+    ),
+    "landing": AssetSource(
+        (
+            "assets/candidates/state_actions/candidate_e_throw_landing/landing_impact.png",
+            "assets/candidates/state_actions/candidate_e_throw_landing/landing_recovery.png",
+            "assets/candidates/state_actions/candidate_e_throw_landing/landing_recovery.png",
+        ),
+        "formal_unified_generated_landing_frames",
+        visual_scale=0.96,
         generated=True,
     ),
 }

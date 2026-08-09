@@ -1,35 +1,17 @@
-# Performance Verification Report
+# 性能验证报告
 
-## Summary
+## 结论
 
-The animation clock runs at a fixed 20 ms interval (target 50 FPS). In an off-screen rendering benchmark, the average draw time per frame is **0.18 ms**, which occupies **0.9%** of the 20 ms per-frame budget. This leaves ample headroom for the transparent sprite, bubble, and programmatic effects.
+动画时钟固定为 20ms（目标 50 FPS）。在本机离屏渲染基准中，180 帧平均渲染为 **0.173 ms/帧**，等效 **5778.9 FPS**；这说明当前透明精灵、气泡和程序化效果的绘制预算足以覆盖 50 FPS 的目标。
 
-## Measured Values
+## 本次测量
 
-| Metric | Value |
-|--------|-------|
-| PySide6 version | 6.11.1 |
-| Runtime PNG files | 51, ~3.9 MiB on disk |
-| Loaded QPixmap memory (estimate) | 3.1 MiB |
-| Manifest + texture warm-up | 22.6 ms |
-| Off-screen benchmark: 180 frames | 0.18 ms/frame average |
-| **Implied draw budget usage** | **0.9% at target 50 FPS** |
+- PySide6：6.11.1
+- 运行时 PNG：201 个，磁盘占用 14789.7 KiB
+- 当前尺寸已加载的独立 `QPixmap` 估算：9.74 MiB
+- 清单与当前尺寸纹理预热：62.97 ms
+- 离屏画面：180 帧，平均 0.173 ms/帧
 
-## Caveats
+## 边界
 
-- This is a controlled off-screen rendering benchmark. It does **not** include the desktop compositor, other applications, or multi-monitor DPI scaling.
-- The runtime does not load image models, take screenshots, or access the network.
-- The formal 4-frame walk cycle and all unified character state assets are included in the resource warm-up and draw time measurement.
-- **This is NOT equivalent to real-world desktop FPS.** The off-screen draw time is a lower bound; actual on-screen performance depends on GPU composition, display refresh rate, and system load.
-
-## Real-World Performance (Windows)
-
-To be measured on actual Windows hardware. Recommended measurement points:
-
-- **Idle CPU**: pet visible but not animating
-- **Walking CPU**: continuous walking animation
-- **RSS memory**: after startup, after 1 hour
-- **Startup time**: from double-click to visible pet
-- **Memory growth**: check for leaks over 4+ hours
-
-These measurements require a dedicated Windows test environment and are not yet available automatically.
+这是受控离屏渲染检查，不把桌面合成器、其他应用占用或多屏 DPI 计入结果。动画渲染不加载图像模型、不截图、不联网；独立版本检查器不在此基准范围内。正式四帧走路与统一角色状态图均已计入本次资源预热和绘制检查。

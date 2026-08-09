@@ -1,0 +1,52 @@
+name: Windows Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      PYTHONUTF8: "1"
+      QT_QPA_PLATFORM: offscreen
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt pytest pyinstaller
+      - name: Verify tag matches application version
+        shell: pwsh
+        run: |
+          $appVersion = python -c "from app.version import VERSION; print(VERSION)"
+          if ("v$appVersion" -ne "${{ github.ref_name }}") {
+            throw "Tag ${{ github.ref_name }} does not match app version v$appVersion"
+          }
+      - name: Run release checks
+        run: python -m pytest -q
+      - name: Build portable bundle
+        run: python tools/build_release.py
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+      - name: Build installer
+        run: python tools/build_installer.py --skip-bundle
+      - name: Publish GitHub Release
+        shell: pwsh
+        run: |
+          $appVersion = python -c "from app.version import VERSION; print(VERSION)"
+          gh release create "v$appVersion" `
+            "dist/DS-Local-Pet-Setup-v$appVersion.exe" `
+            "dist/DS-Local-Pet-Setup-v$appVersion.exe.sha256" `
+            "dist/DS-Local-Pet-v$appVersion-win-x64.zip" `
+            --title "大肥鱼桌宠 v$appVersion" `
+            --generate-notes

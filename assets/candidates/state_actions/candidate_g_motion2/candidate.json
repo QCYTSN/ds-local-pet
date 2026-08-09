@@ -1,0 +1,12 @@
+{
+  "candidate_id": "candidate_g_motion2",
+  "art_family": "unified_generated_v2",
+  "generator": "built-in ImageGen",
+  "sheets": {
+    "walk_right": {"rows": 2, "columns": 2, "frames": 4},
+    "walk_transition": {"rows": 2, "columns": 3, "frames": 6},
+    "daily_transition": {"rows": 2, "columns": 3, "frames": 6},
+    "tail_react": {"rows": 2, "columns": 2, "frames": 4}
+  },
+  "background_removal": "built-in chroma-key workflow with remove_chroma_key.py"
+}

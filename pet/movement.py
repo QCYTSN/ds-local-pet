@@ -17,7 +17,7 @@ class MovementController:
     def __init__(
         self,
         mode: str = "wander",
-        speed: float = 132.0,
+        speed: float = 82.0,
         *,
         rng: random.Random | None = None,
     ) -> None:
@@ -29,6 +29,9 @@ class MovementController:
         self.current_speed = 0.0
         self.direction = "down"
         self.facing = 1
+
+    def set_speed(self, speed: float) -> None:
+        self.speed = max(48.0, min(128.0, float(speed)))
 
     @property
     def is_walking(self) -> bool:
@@ -61,6 +64,7 @@ class MovementController:
         body_widths: float,
         now: float,
         away_from_cursor: bool = False,
+        horizontal_bounds: tuple[float, float] | None = None,
     ) -> bool:
         """Schedule one nearby walk chosen by the activity director."""
 
@@ -70,15 +74,20 @@ class MovementController:
         if screen is None:
             return False
         geometry = screen.availableGeometry()
-        left = geometry.left() + 20
-        top = geometry.top() + 20
-        right = max(left, geometry.right() - widget.width() - 20)
-        bottom = max(top, geometry.bottom() - widget.height() - 20)
+        if horizontal_bounds is None:
+            left = float(geometry.left() + 20)
+            right = float(max(left, geometry.right() - widget.width() - 20))
+        else:
+            left = max(float(geometry.left()), float(horizontal_bounds[0]))
+            right = min(
+                float(geometry.right() - widget.width() + 1),
+                float(horizontal_bounds[1]),
+            )
+            right = max(left, right)
 
         body_width = max(80.0, min(widget.width() * 0.82, widget.height() * 0.72))
         distance = body_width * max(0.55, min(2.5, float(body_widths)))
         center_x = widget.x() + widget.width() / 2.0
-        center_y = widget.y() + widget.height() / 2.0
         cursor = widget.cursor().pos()
         if away_from_cursor:
             preferred_sign = -1.0 if cursor.x() >= center_x else 1.0
@@ -89,10 +98,9 @@ class MovementController:
         for sign in (preferred_sign, -preferred_sign):
             for _ in range(4):
                 horizontal = sign * distance * self.rng.uniform(0.82, 1.0)
-                vertical = distance * self.rng.uniform(-0.26, 0.26)
                 target_x = max(left, min(right, widget.x() + horizontal))
-                target_y = max(top, min(bottom, widget.y() + vertical))
-                moved = ((target_x - widget.x()) ** 2 + (target_y - widget.y()) ** 2) ** 0.5
+                target_y = float(widget.y())
+                moved = abs(target_x - widget.x())
                 target_cursor_distance = (
                     (target_x + widget.width() / 2.0 - cursor.x()) ** 2
                     + (target_y + widget.height() / 2.0 - cursor.y()) ** 2
@@ -100,7 +108,8 @@ class MovementController:
                 score = moved
                 if away_from_cursor:
                     current_cursor_distance = (
-                        (center_x - cursor.x()) ** 2 + (center_y - cursor.y()) ** 2
+                        (center_x - cursor.x()) ** 2
+                        + (widget.y() + widget.height() / 2.0 - cursor.y()) ** 2
                     ) ** 0.5
                     score += (target_cursor_distance - current_cursor_distance) * 1.8
                 elif target_cursor_distance < 140.0:
@@ -110,7 +119,7 @@ class MovementController:
         if not candidates:
             return False
         _, target_x, target_y = max(candidates, key=lambda candidate: candidate[0])
-        actual_distance = ((target_x - widget.x()) ** 2 + (target_y - widget.y()) ** 2) ** 0.5
+        actual_distance = abs(target_x - widget.x())
         if actual_distance < 28.0:
             return False
         self.target = (target_x, target_y)
@@ -123,6 +132,8 @@ class MovementController:
         now: float,
         delta_seconds: float,
         set_direction: Callable[[str, int | None], None],
+        energy: float = 0.78,
+        horizontal_bounds: tuple[float, float] | None = None,
     ) -> bool:
         if self.mode == "follow":
             self._set_follow_target(widget)
@@ -139,27 +150,34 @@ class MovementController:
             self.current_speed = max(0.0, self.current_speed - self.speed * delta_seconds * 4)
             return False
 
-        target_x, target_y = self.target
+        target_x, _target_y = self.target
+        if horizontal_bounds is not None:
+            lower, upper = horizontal_bounds
+            target_x = max(lower, min(upper, target_x))
+            self.target = (target_x, float(widget.y()))
         delta_x = target_x - widget.x()
-        delta_y = target_y - widget.y()
-        distance = (delta_x * delta_x + delta_y * delta_y) ** 0.5
+        # Walking is a ground action.  Vertical movement belongs exclusively
+        # to ThrowPhysics so a walking sprite can never glide through the air.
+        target_y = float(widget.y())
+        distance = abs(delta_x)
         if distance < 8.0:
             self.target = None
             self.current_speed = 0.0
             self.rest_until = now + self.rng.uniform(3.0, 7.0)
-            set_direction("down", None)
             return False
 
-        self.current_speed += (self.speed - self.current_speed) * min(1.0, delta_seconds * 15.0)
+        energy = max(0.0, min(1.0, float(energy)))
+        effective_speed = self.speed * (0.62 + energy * 0.48)
+        self.current_speed += (effective_speed - self.current_speed) * min(1.0, delta_seconds * 15.0)
         step = min(distance, self.current_speed * delta_seconds)
-        next_x = widget.x() + delta_x / distance * step
-        next_y = widget.y() + delta_y / distance * step
+        next_x = widget.x() + (-step if delta_x < 0 else step)
+        if horizontal_bounds is not None:
+            lower, upper = horizontal_bounds
+            next_x = max(lower, min(upper, next_x))
+        next_y = target_y
         widget.move(round(next_x), round(next_y))
 
-        if abs(delta_x) > abs(delta_y) * 1.15:
-            set_direction("left" if delta_x < 0 else "right", -1 if delta_x < 0 else 1)
-        else:
-            set_direction("up" if delta_y < 0 else "down", None)
+        set_direction("left" if delta_x < 0 else "right", -1 if delta_x < 0 else 1)
         return True
 
     def _set_follow_target(self, widget: QWidget) -> None:
@@ -176,7 +194,5 @@ class MovementController:
             self.target = None
             return
         max_x = geometry.right() - widget.width() + 1
-        max_y = geometry.bottom() - widget.height() + 1
         target_x = max(geometry.left(), min(max_x, cursor.x() - widget.width() / 2))
-        target_y = max(geometry.top(), min(max_y, cursor.y() - 90))
-        self.target = (target_x, target_y)
+        self.target = (target_x, float(widget.y()))

@@ -1,10 +1,10 @@
 {
-  "format_version": 2,
+  "format_version": 4,
   "character_id": "dafeiyu",
   "assets": {
     "idle_front": {
       "source_masters": [
-        "assets/processed/masters/front_base.png"
+        "assets/processed/masters/generated/idle_front.png"
       ],
       "frames": {
         "187": [
@@ -18,8 +18,88 @@
         ]
       },
       "frame_count": 1,
-      "quality": "clean_base_view",
-      "art_family": "clean_three_view",
+      "quality": "formal_unified_generated_idle_base",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "idle_blink": {
+      "source_masters": [
+        "assets/processed/masters/generated/idle_blink_00.png",
+        "assets/processed/masters/generated/idle_blink_01.png",
+        "assets/processed/masters/generated/idle_blink_02.png",
+        "assets/processed/masters/generated/idle_blink_03.png",
+        "assets/processed/masters/generated/idle_blink_04.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/idle_blink/idle_blink_187_00.png",
+          "assets/processed/runtime/states/idle_blink/idle_blink_187_01.png",
+          "assets/processed/runtime/states/idle_blink/idle_blink_187_02.png",
+          "assets/processed/runtime/states/idle_blink/idle_blink_187_03.png",
+          "assets/processed/runtime/states/idle_blink/idle_blink_187_04.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/idle_blink/idle_blink_238_00.png",
+          "assets/processed/runtime/states/idle_blink/idle_blink_238_01.png",
+          "assets/processed/runtime/states/idle_blink/idle_blink_238_02.png",
+          "assets/processed/runtime/states/idle_blink/idle_blink_238_03.png",
+          "assets/processed/runtime/states/idle_blink/idle_blink_238_04.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/idle_blink/idle_blink_306_00.png",
+          "assets/processed/runtime/states/idle_blink/idle_blink_306_01.png",
+          "assets/processed/runtime/states/idle_blink/idle_blink_306_02.png",
+          "assets/processed/runtime/states/idle_blink/idle_blink_306_03.png",
+          "assets/processed/runtime/states/idle_blink/idle_blink_306_04.png"
+        ]
+      },
+      "frame_count": 5,
+      "quality": "formal_unified_generated_micro_frames",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "idle_glance": {
+      "source_masters": [
+        "assets/processed/masters/generated/idle_glance_00.png",
+        "assets/processed/masters/generated/idle_glance_01.png",
+        "assets/processed/masters/generated/idle_glance_02.png",
+        "assets/processed/masters/generated/idle_glance_03.png",
+        "assets/processed/masters/generated/idle_glance_04.png",
+        "assets/processed/masters/generated/idle_glance_05.png",
+        "assets/processed/masters/generated/idle_glance_06.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/idle_glance/idle_glance_187_00.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_187_01.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_187_02.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_187_03.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_187_04.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_187_05.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_187_06.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/idle_glance/idle_glance_238_00.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_238_01.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_238_02.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_238_03.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_238_04.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_238_05.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_238_06.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/idle_glance/idle_glance_306_00.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_306_01.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_306_02.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_306_03.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_306_04.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_306_05.png",
+          "assets/processed/runtime/states/idle_glance/idle_glance_306_06.png"
+        ]
+      },
+      "frame_count": 7,
+      "quality": "formal_unified_generated_micro_frames",
+      "art_family": "unified_generated_v1",
       "generated_at_runtime": false
     },
     "idle_think": {
@@ -62,6 +142,26 @@
       "art_family": "clean_three_view",
       "generated_at_runtime": false
     },
+    "walk_side_stand": {
+      "source_masters": [
+        "assets/processed/masters/side_base.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/walk_side_stand/walk_side_stand_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/walk_side_stand/walk_side_stand_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/walk_side_stand/walk_side_stand_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "clean_base_view",
+      "art_family": "clean_three_view",
+      "generated_at_runtime": false
+    },
     "walk_side": {
       "source_masters": [
         "assets/processed/masters/generated/walk_side_00.png",
@@ -94,6 +194,134 @@
       "art_family": "unified_generated_v1",
       "generated_at_runtime": false
     },
+    "walk_side_right": {
+      "source_masters": [
+        "assets/processed/masters/generated/walk_side_right_00.png",
+        "assets/processed/masters/generated/walk_side_right_01.png",
+        "assets/processed/masters/generated/walk_side_right_02.png",
+        "assets/processed/masters/generated/walk_side_right_03.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/walk_side_right/walk_side_right_187_00.png",
+          "assets/processed/runtime/states/walk_side_right/walk_side_right_187_01.png",
+          "assets/processed/runtime/states/walk_side_right/walk_side_right_187_02.png",
+          "assets/processed/runtime/states/walk_side_right/walk_side_right_187_03.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/walk_side_right/walk_side_right_238_00.png",
+          "assets/processed/runtime/states/walk_side_right/walk_side_right_238_01.png",
+          "assets/processed/runtime/states/walk_side_right/walk_side_right_238_02.png",
+          "assets/processed/runtime/states/walk_side_right/walk_side_right_238_03.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/walk_side_right/walk_side_right_306_00.png",
+          "assets/processed/runtime/states/walk_side_right/walk_side_right_306_01.png",
+          "assets/processed/runtime/states/walk_side_right/walk_side_right_306_02.png",
+          "assets/processed/runtime/states/walk_side_right/walk_side_right_306_03.png"
+        ]
+      },
+      "frame_count": 4,
+      "quality": "formal_unified_generated_walk_frames_directional",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "walk_start_left": {
+      "source_masters": [
+        "assets/processed/masters/generated/walk_start_left_00.png",
+        "assets/processed/masters/generated/walk_start_left_01.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/walk_start_left/walk_start_left_187_00.png",
+          "assets/processed/runtime/states/walk_start_left/walk_start_left_187_01.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/walk_start_left/walk_start_left_238_00.png",
+          "assets/processed/runtime/states/walk_start_left/walk_start_left_238_01.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/walk_start_left/walk_start_left_306_00.png",
+          "assets/processed/runtime/states/walk_start_left/walk_start_left_306_01.png"
+        ]
+      },
+      "frame_count": 2,
+      "quality": "formal_unified_generated_locomotion_transition",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "walk_stop_left": {
+      "source_masters": [
+        "assets/processed/masters/generated/walk_stop_left_00.png",
+        "assets/processed/masters/generated/walk_stop_left_01.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/walk_stop_left/walk_stop_left_187_00.png",
+          "assets/processed/runtime/states/walk_stop_left/walk_stop_left_187_01.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/walk_stop_left/walk_stop_left_238_00.png",
+          "assets/processed/runtime/states/walk_stop_left/walk_stop_left_238_01.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/walk_stop_left/walk_stop_left_306_00.png",
+          "assets/processed/runtime/states/walk_stop_left/walk_stop_left_306_01.png"
+        ]
+      },
+      "frame_count": 2,
+      "quality": "formal_unified_generated_locomotion_transition",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "walk_start_right": {
+      "source_masters": [
+        "assets/processed/masters/generated/walk_start_right_00.png",
+        "assets/processed/masters/generated/walk_start_right_01.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/walk_start_right/walk_start_right_187_00.png",
+          "assets/processed/runtime/states/walk_start_right/walk_start_right_187_01.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/walk_start_right/walk_start_right_238_00.png",
+          "assets/processed/runtime/states/walk_start_right/walk_start_right_238_01.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/walk_start_right/walk_start_right_306_00.png",
+          "assets/processed/runtime/states/walk_start_right/walk_start_right_306_01.png"
+        ]
+      },
+      "frame_count": 2,
+      "quality": "formal_unified_generated_locomotion_transition",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "walk_stop_right": {
+      "source_masters": [
+        "assets/processed/masters/generated/walk_stop_right_00.png",
+        "assets/processed/masters/generated/walk_stop_right_01.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/walk_stop_right/walk_stop_right_187_00.png",
+          "assets/processed/runtime/states/walk_stop_right/walk_stop_right_187_01.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/walk_stop_right/walk_stop_right_238_00.png",
+          "assets/processed/runtime/states/walk_stop_right/walk_stop_right_238_01.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/walk_stop_right/walk_stop_right_306_00.png",
+          "assets/processed/runtime/states/walk_stop_right/walk_stop_right_306_01.png"
+        ]
+      },
+      "frame_count": 2,
+      "quality": "formal_unified_generated_locomotion_transition",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
     "happy": {
       "source_masters": [
         "assets/processed/masters/generated/happy.png"
@@ -111,6 +339,46 @@
       },
       "frame_count": 1,
       "quality": "formal_unified_generated_action",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "head_pat": {
+      "source_masters": [
+        "assets/processed/masters/generated/head_pat_00.png",
+        "assets/processed/masters/generated/head_pat_01.png",
+        "assets/processed/masters/generated/head_pat_02.png",
+        "assets/processed/masters/generated/head_pat_03.png",
+        "assets/processed/masters/generated/head_pat_04.png",
+        "assets/processed/masters/generated/head_pat_05.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/head_pat/head_pat_187_00.png",
+          "assets/processed/runtime/states/head_pat/head_pat_187_01.png",
+          "assets/processed/runtime/states/head_pat/head_pat_187_02.png",
+          "assets/processed/runtime/states/head_pat/head_pat_187_03.png",
+          "assets/processed/runtime/states/head_pat/head_pat_187_04.png",
+          "assets/processed/runtime/states/head_pat/head_pat_187_05.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/head_pat/head_pat_238_00.png",
+          "assets/processed/runtime/states/head_pat/head_pat_238_01.png",
+          "assets/processed/runtime/states/head_pat/head_pat_238_02.png",
+          "assets/processed/runtime/states/head_pat/head_pat_238_03.png",
+          "assets/processed/runtime/states/head_pat/head_pat_238_04.png",
+          "assets/processed/runtime/states/head_pat/head_pat_238_05.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/head_pat/head_pat_306_00.png",
+          "assets/processed/runtime/states/head_pat/head_pat_306_01.png",
+          "assets/processed/runtime/states/head_pat/head_pat_306_02.png",
+          "assets/processed/runtime/states/head_pat/head_pat_306_03.png",
+          "assets/processed/runtime/states/head_pat/head_pat_306_04.png",
+          "assets/processed/runtime/states/head_pat/head_pat_306_05.png"
+        ]
+      },
+      "frame_count": 6,
+      "quality": "formal_unified_generated_interaction_frames",
       "art_family": "unified_generated_v1",
       "generated_at_runtime": false
     },
@@ -156,41 +424,93 @@
     },
     "poke_react": {
       "source_masters": [
-        "assets/processed/masters/generated/poke_react.png"
+        "assets/processed/masters/generated/poke_react_00.png",
+        "assets/processed/masters/generated/poke_react_01.png",
+        "assets/processed/masters/generated/poke_react_02.png",
+        "assets/processed/masters/generated/poke_react_03.png"
       ],
       "frames": {
         "187": [
-          "assets/processed/runtime/states/poke_react/poke_react_187.png"
+          "assets/processed/runtime/states/poke_react/poke_react_187_00.png",
+          "assets/processed/runtime/states/poke_react/poke_react_187_01.png",
+          "assets/processed/runtime/states/poke_react/poke_react_187_02.png",
+          "assets/processed/runtime/states/poke_react/poke_react_187_03.png"
         ],
         "238": [
-          "assets/processed/runtime/states/poke_react/poke_react_238.png"
+          "assets/processed/runtime/states/poke_react/poke_react_238_00.png",
+          "assets/processed/runtime/states/poke_react/poke_react_238_01.png",
+          "assets/processed/runtime/states/poke_react/poke_react_238_02.png",
+          "assets/processed/runtime/states/poke_react/poke_react_238_03.png"
         ],
         "306": [
-          "assets/processed/runtime/states/poke_react/poke_react_306.png"
+          "assets/processed/runtime/states/poke_react/poke_react_306_00.png",
+          "assets/processed/runtime/states/poke_react/poke_react_306_01.png",
+          "assets/processed/runtime/states/poke_react/poke_react_306_02.png",
+          "assets/processed/runtime/states/poke_react/poke_react_306_03.png"
         ]
       },
-      "frame_count": 1,
-      "quality": "formal_unified_generated_action",
+      "frame_count": 4,
+      "quality": "formal_unified_generated_interaction_frames",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "tail_react": {
+      "source_masters": [
+        "assets/processed/masters/generated/tail_react_00.png",
+        "assets/processed/masters/generated/tail_react_01.png",
+        "assets/processed/masters/generated/tail_react_02.png",
+        "assets/processed/masters/generated/tail_react_03.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/tail_react/tail_react_187_00.png",
+          "assets/processed/runtime/states/tail_react/tail_react_187_01.png",
+          "assets/processed/runtime/states/tail_react/tail_react_187_02.png",
+          "assets/processed/runtime/states/tail_react/tail_react_187_03.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/tail_react/tail_react_238_00.png",
+          "assets/processed/runtime/states/tail_react/tail_react_238_01.png",
+          "assets/processed/runtime/states/tail_react/tail_react_238_02.png",
+          "assets/processed/runtime/states/tail_react/tail_react_238_03.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/tail_react/tail_react_306_00.png",
+          "assets/processed/runtime/states/tail_react/tail_react_306_01.png",
+          "assets/processed/runtime/states/tail_react/tail_react_306_02.png",
+          "assets/processed/runtime/states/tail_react/tail_react_306_03.png"
+        ]
+      },
+      "frame_count": 4,
+      "quality": "formal_unified_generated_interaction_frames",
       "art_family": "unified_generated_v1",
       "generated_at_runtime": false
     },
     "eat": {
       "source_masters": [
-        "assets/processed/masters/generated/eat.png"
+        "assets/processed/masters/generated/eat_00.png",
+        "assets/processed/masters/generated/eat_01.png",
+        "assets/processed/masters/generated/eat_02.png"
       ],
       "frames": {
         "187": [
-          "assets/processed/runtime/states/eat/eat_187.png"
+          "assets/processed/runtime/states/eat/eat_187_00.png",
+          "assets/processed/runtime/states/eat/eat_187_01.png",
+          "assets/processed/runtime/states/eat/eat_187_02.png"
         ],
         "238": [
-          "assets/processed/runtime/states/eat/eat_238.png"
+          "assets/processed/runtime/states/eat/eat_238_00.png",
+          "assets/processed/runtime/states/eat/eat_238_01.png",
+          "assets/processed/runtime/states/eat/eat_238_02.png"
         ],
         "306": [
-          "assets/processed/runtime/states/eat/eat_306.png"
+          "assets/processed/runtime/states/eat/eat_306_00.png",
+          "assets/processed/runtime/states/eat/eat_306_01.png",
+          "assets/processed/runtime/states/eat/eat_306_02.png"
         ]
       },
-      "frame_count": 1,
-      "quality": "formal_unified_generated_action",
+      "frame_count": 3,
+      "quality": "formal_unified_generated_daily_frames",
       "art_family": "unified_generated_v1",
       "generated_at_runtime": false
     },
@@ -230,7 +550,63 @@
         ]
       },
       "frame_count": 1,
-      "quality": "formal_unified_generated_action",
+      "quality": "formal_unified_generated_sleep_base",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "sleep_enter": {
+      "source_masters": [
+        "assets/processed/masters/generated/sleep_enter_00.png",
+        "assets/processed/masters/generated/sleep_enter_01.png",
+        "assets/processed/masters/generated/sleep_enter_02.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/sleep_enter/sleep_enter_187_00.png",
+          "assets/processed/runtime/states/sleep_enter/sleep_enter_187_01.png",
+          "assets/processed/runtime/states/sleep_enter/sleep_enter_187_02.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/sleep_enter/sleep_enter_238_00.png",
+          "assets/processed/runtime/states/sleep_enter/sleep_enter_238_01.png",
+          "assets/processed/runtime/states/sleep_enter/sleep_enter_238_02.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/sleep_enter/sleep_enter_306_00.png",
+          "assets/processed/runtime/states/sleep_enter/sleep_enter_306_01.png",
+          "assets/processed/runtime/states/sleep_enter/sleep_enter_306_02.png"
+        ]
+      },
+      "frame_count": 3,
+      "quality": "formal_unified_generated_sleep_transition",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "sleep_wake": {
+      "source_masters": [
+        "assets/processed/masters/generated/sleep_wake_00.png",
+        "assets/processed/masters/generated/sleep_wake_01.png",
+        "assets/processed/masters/generated/sleep_wake_02.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/sleep_wake/sleep_wake_187_00.png",
+          "assets/processed/runtime/states/sleep_wake/sleep_wake_187_01.png",
+          "assets/processed/runtime/states/sleep_wake/sleep_wake_187_02.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/sleep_wake/sleep_wake_238_00.png",
+          "assets/processed/runtime/states/sleep_wake/sleep_wake_238_01.png",
+          "assets/processed/runtime/states/sleep_wake/sleep_wake_238_02.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/sleep_wake/sleep_wake_306_00.png",
+          "assets/processed/runtime/states/sleep_wake/sleep_wake_306_01.png",
+          "assets/processed/runtime/states/sleep_wake/sleep_wake_306_02.png"
+        ]
+      },
+      "frame_count": 3,
+      "quality": "formal_unified_generated_sleep_transition",
       "art_family": "unified_generated_v1",
       "generated_at_runtime": false
     },
@@ -293,6 +669,54 @@
       "quality": "formal_unified_generated_action",
       "art_family": "unified_generated_v1",
       "generated_at_runtime": false
+    },
+    "released_airborne": {
+      "source_masters": [
+        "assets/processed/masters/generated/released_airborne.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/released_airborne/released_airborne_187.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/released_airborne/released_airborne_238.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/released_airborne/released_airborne_306.png"
+        ]
+      },
+      "frame_count": 1,
+      "quality": "formal_unified_generated_throw_transition",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
+    },
+    "landing": {
+      "source_masters": [
+        "assets/processed/masters/generated/landing_00.png",
+        "assets/processed/masters/generated/landing_01.png",
+        "assets/processed/masters/generated/landing_02.png"
+      ],
+      "frames": {
+        "187": [
+          "assets/processed/runtime/states/landing/landing_187_00.png",
+          "assets/processed/runtime/states/landing/landing_187_01.png",
+          "assets/processed/runtime/states/landing/landing_187_02.png"
+        ],
+        "238": [
+          "assets/processed/runtime/states/landing/landing_238_00.png",
+          "assets/processed/runtime/states/landing/landing_238_01.png",
+          "assets/processed/runtime/states/landing/landing_238_02.png"
+        ],
+        "306": [
+          "assets/processed/runtime/states/landing/landing_306_00.png",
+          "assets/processed/runtime/states/landing/landing_306_01.png",
+          "assets/processed/runtime/states/landing/landing_306_02.png"
+        ]
+      },
+      "frame_count": 3,
+      "quality": "formal_unified_generated_landing_frames",
+      "art_family": "unified_generated_v1",
+      "generated_at_runtime": false
     }
   },
   "actions": {
@@ -312,7 +736,45 @@
       "procedural_motion": {
         "type": "breath"
       },
-      "quality": "clean_base_view",
+      "quality": "formal_unified_generated_idle_base",
+      "requires_real_frames": false
+    },
+    "BLINK": {
+      "id": "BLINK",
+      "asset": "idle_blink",
+      "loop": false,
+      "duration_ms": 560,
+      "priority": 12,
+      "interruptible": true,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "micro_idle"
+      },
+      "quality": "formal_unified_generated_micro_frames",
+      "requires_real_frames": false
+    },
+    "GLANCE": {
+      "id": "GLANCE",
+      "asset": "idle_glance",
+      "loop": false,
+      "duration_ms": 1260,
+      "priority": 12,
+      "interruptible": true,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "micro_idle"
+      },
+      "quality": "formal_unified_generated_micro_frames",
       "requires_real_frames": false
     },
     "THINKING": {
@@ -351,7 +813,19 @@
         "type": "walk_frames"
       },
       "quality": "formal_unified_generated_walk_frames",
-      "requires_real_frames": false
+      "requires_real_frames": false,
+      "transition": {
+        "enter": {
+          "asset": "walk_start_left",
+          "duration_ms": 260,
+          "effect": "walk_start"
+        },
+        "exit": {
+          "asset": "walk_stop_left",
+          "duration_ms": 300,
+          "effect": "walk_stop"
+        }
+      }
     },
     "HAPPY": {
       "id": "HAPPY",
@@ -370,6 +844,25 @@
         "type": "bounce"
       },
       "quality": "formal_unified_generated_action",
+      "requires_real_frames": false
+    },
+    "HEAD_PAT": {
+      "id": "HEAD_PAT",
+      "asset": "head_pat",
+      "loop": false,
+      "duration_ms": 1200,
+      "priority": 68,
+      "interruptible": false,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "head_pat"
+      },
+      "quality": "formal_unified_generated_interaction_frames",
       "requires_real_frames": false
     },
     "TALKING": {
@@ -414,7 +907,7 @@
       "id": "POKE_REACT",
       "asset": "poke_react",
       "loop": false,
-      "duration_ms": 430,
+      "duration_ms": 760,
       "priority": 80,
       "interruptible": false,
       "return_state": "IDLE",
@@ -424,9 +917,28 @@
         "y": 0.96
       },
       "procedural_motion": {
-        "type": "recoil"
+        "type": "poke_frames"
       },
-      "quality": "formal_unified_generated_action",
+      "quality": "formal_unified_generated_interaction_frames",
+      "requires_real_frames": false
+    },
+    "TAIL_REACT": {
+      "id": "TAIL_REACT",
+      "asset": "tail_react",
+      "loop": false,
+      "duration_ms": 980,
+      "priority": 82,
+      "interruptible": false,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "tail_react"
+      },
+      "quality": "formal_unified_generated_interaction_frames",
       "requires_real_frames": false
     },
     "EATING": {
@@ -445,7 +957,7 @@
       "procedural_motion": {
         "type": "eat"
       },
-      "quality": "formal_unified_generated_action",
+      "quality": "formal_unified_generated_daily_frames",
       "requires_real_frames": false
     },
     "SWEEPING": {
@@ -483,8 +995,20 @@
       "procedural_motion": {
         "type": "sleep"
       },
-      "quality": "formal_unified_generated_action",
-      "requires_real_frames": false
+      "quality": "formal_unified_generated_sleep_base",
+      "requires_real_frames": false,
+      "transition": {
+        "enter": {
+          "asset": "sleep_enter",
+          "duration_ms": 1050,
+          "effect": "sleep_enter"
+        },
+        "exit": {
+          "asset": "sleep_wake",
+          "duration_ms": 900,
+          "effect": "sleep_wake"
+        }
+      }
     },
     "DRAGGING": {
       "id": "DRAGGING",
@@ -508,8 +1032,8 @@
     "FALLING": {
       "id": "FALLING",
       "asset": "falling",
-      "loop": false,
-      "duration_ms": 900,
+      "loop": true,
+      "duration_ms": null,
       "priority": 90,
       "interruptible": false,
       "return_state": "IDLE",
@@ -522,6 +1046,32 @@
         "type": "fall"
       },
       "quality": "formal_unified_generated_action",
+      "requires_real_frames": false,
+      "transition": {
+        "enter": {
+          "asset": "released_airborne",
+          "duration_ms": 140,
+          "effect": "fall"
+        }
+      }
+    },
+    "LANDING": {
+      "id": "LANDING",
+      "asset": "landing",
+      "loop": false,
+      "duration_ms": 620,
+      "priority": 85,
+      "interruptible": false,
+      "return_state": "IDLE",
+      "anchor": {
+        "type": "ground",
+        "x": 0.5,
+        "y": 0.96
+      },
+      "procedural_motion": {
+        "type": "landing"
+      },
+      "quality": "formal_unified_generated_landing_frames",
       "requires_real_frames": false
     },
     "DIZZY": {
@@ -545,15 +1095,26 @@
     }
   },
   "fallbacks": {
+    "idle_blink": "idle_front",
+    "idle_glance": "idle_front",
+    "head_pat": "happy",
     "walk_side": "idle_front",
+    "walk_side_right": "walk_side",
+    "walk_start_left": "walk_side_stand",
+    "walk_start_right": "walk_side_stand",
+    "walk_stop_left": "walk_side_stand",
+    "walk_stop_right": "walk_side_stand",
     "talk": "idle_front",
     "sleep": "idle_front",
     "dragging": "idle_front",
-    "dizzy": "idle_front"
+    "released_airborne": "falling",
+    "landing": "dizzy",
+    "dizzy": "idle_front",
+    "tail_react": "poke_react"
   },
   "notes": [
     "所有运行时动作均来自同一套统一角色母版；运行时不生成图片。",
-    "WALKING 是已接入的四帧侧视循环，而非程序化滑行 placeholder。",
+    "WALKING 使用独立左右四帧循环与起步/刹停过渡，而非镜像滑行 placeholder。",
     "用户提供的付费状态图仅作为动作语义参考，不混入最终显示图集。"
   ]
 }

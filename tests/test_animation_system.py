@@ -5,7 +5,15 @@ import unittest
 from pathlib import Path
 
 from animation.asset_registry import AssetRegistry
-from animation.clip import ActionSpec, Anchor, AnimationClip, ClipFrame, PetAction
+from animation.clip import (
+    ActionSpec,
+    Anchor,
+    AnimationClip,
+    AnimationPhase,
+    AnimationProgram,
+    ClipFrame,
+    PetAction,
+)
 from animation.player import AnimationPlayer
 from animation.state_machine import ActionStateMachine
 
@@ -63,19 +71,26 @@ class ActionStateMachineTests(unittest.TestCase):
 
 class AnimationPlayerTests(unittest.TestCase):
     @staticmethod
-    def clip(action: PetAction, source_name: str) -> AnimationClip:
+    def clip(
+        action: PetAction,
+        source_name: str,
+        *,
+        phase: AnimationPhase = AnimationPhase.BODY,
+        duration_ms: int | None = None,
+    ) -> AnimationClip:
         frame = ClipFrame(Path(source_name), object())  # type: ignore[arg-type]
         return AnimationClip(
             action=action,
             asset_id=source_name,
             frames=(frame,),
             loop=True,
-            duration_ms=None,
+            duration_ms=duration_ms,
             frame_duration_ms=100,
             anchor=Anchor(),
             effect="breath",
             quality="source",
             requires_real_frames=False,
+            phase=phase,
         )
 
     def test_crossfade_keeps_previous_layer_only_for_same_art(self) -> None:
@@ -97,6 +112,36 @@ class AnimationPlayerTests(unittest.TestCase):
         player.play(self.clip(PetAction.HAPPY, "happy.png"))
         self.assertIsNone(player.snapshot().previous)
 
+    def test_program_runs_enter_body_and_exit_before_next_action(self) -> None:
+        player = AnimationPlayer()
+        walking = AnimationProgram(
+            action=PetAction.WALKING,
+            enter=self.clip(
+                PetAction.WALKING,
+                "walk_stand.png",
+                phase=AnimationPhase.ENTER,
+                duration_ms=50,
+            ),
+            body=self.clip(PetAction.WALKING, "walk_loop.png"),
+            exit=self.clip(
+                PetAction.WALKING,
+                "walk_stand.png",
+                phase=AnimationPhase.EXIT,
+                duration_ms=50,
+            ),
+        )
+        player.play(walking, crossfade=False)
+        self.assertEqual(player.snapshot().phase, AnimationPhase.ENTER)
+        player.tick(0.06)
+        self.assertEqual(player.snapshot().phase, AnimationPhase.BODY)
+        self.assertEqual(player.snapshot().current.asset_id, "walk_loop.png")
+
+        player.play(self.clip(PetAction.IDLE, "idle.png"), crossfade=False)
+        self.assertEqual(player.snapshot().phase, AnimationPhase.EXIT)
+        player.tick(0.06)
+        self.assertEqual(player.snapshot().phase, AnimationPhase.BODY)
+        self.assertEqual(player.snapshot().current.action, PetAction.IDLE)
+
 
 class AssetManifestTests(unittest.TestCase):
     def test_manifest_declares_required_states_and_formal_walk_cycle(self) -> None:
@@ -107,8 +152,22 @@ class AssetManifestTests(unittest.TestCase):
         self.assertFalse(walking.requires_real_frames)
         self.assertEqual(walking.quality, "formal_unified_generated_walk_frames")
         manifest = json.loads((root / "assets" / "manifests" / "actions.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest["format_version"], 4)
         self.assertEqual(manifest["assets"]["walk_side"]["frame_count"], 4)
         self.assertEqual(len(manifest["assets"]["walk_side"]["frames"]["238"]), 4)
+        self.assertEqual(manifest["assets"]["walk_side_right"]["frame_count"], 4)
+        self.assertEqual(len(manifest["assets"]["walk_side_right"]["frames"]["238"]), 4)
+        self.assertEqual(manifest["actions"]["WALKING"]["transition"]["enter"]["asset"], "walk_start_left")
+        self.assertEqual(manifest["actions"]["WALKING"]["transition"]["exit"]["asset"], "walk_stop_left")
+        self.assertEqual(manifest["assets"]["tail_react"]["frame_count"], 4)
+        self.assertEqual(manifest["actions"]["SLEEPING"]["transition"]["enter"]["asset"], "sleep_enter")
+        self.assertEqual(manifest["actions"]["SLEEPING"]["transition"]["exit"]["asset"], "sleep_wake")
+        self.assertEqual(manifest["assets"]["landing"]["frame_count"], 3)
+        self.assertEqual(manifest["assets"]["idle_blink"]["frame_count"], 5)
+        self.assertEqual(manifest["assets"]["idle_glance"]["frame_count"], 7)
+        self.assertEqual(manifest["assets"]["head_pat"]["frame_count"], 6)
+        self.assertEqual(manifest["assets"]["poke_react"]["frame_count"], 4)
+        self.assertTrue(manifest["actions"]["FALLING"]["loop"])
 
 
 if __name__ == "__main__":

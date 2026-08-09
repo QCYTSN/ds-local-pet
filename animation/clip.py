@@ -11,17 +11,22 @@ from PySide6.QtGui import QPixmap
 
 class PetAction(str, Enum):
     IDLE = "IDLE"
+    BLINK = "BLINK"
+    GLANCE = "GLANCE"
     THINKING = "THINKING"
     WALKING = "WALKING"
     HAPPY = "HAPPY"
+    HEAD_PAT = "HEAD_PAT"
     TALKING = "TALKING"
     ANGRY = "ANGRY"
     POKE_REACT = "POKE_REACT"
+    TAIL_REACT = "TAIL_REACT"
     EATING = "EATING"
     SWEEPING = "SWEEPING"
     SLEEPING = "SLEEPING"
     DRAGGING = "DRAGGING"
     FALLING = "FALLING"
+    LANDING = "LANDING"
     DIZZY = "DIZZY"
 
     @classmethod
@@ -34,6 +39,19 @@ class Anchor:
     kind: str = "ground"
     x: float = 0.5
     y: float = 0.985
+
+
+class AnimationPhase(str, Enum):
+    ENTER = "enter"
+    BODY = "body"
+    EXIT = "exit"
+
+
+@dataclass(frozen=True, slots=True)
+class ClipSegmentSpec:
+    asset_id: str
+    duration_ms: int
+    effect: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,6 +67,8 @@ class ActionSpec:
     effect: str
     quality: str
     requires_real_frames: bool
+    enter: ClipSegmentSpec | None = None
+    exit: ClipSegmentSpec | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,6 +90,7 @@ class AnimationClip:
     quality: str
     requires_real_frames: bool
     mirrored: bool = False
+    phase: AnimationPhase = AnimationPhase.BODY
 
     @property
     def identity(self) -> tuple[object, ...]:
@@ -80,4 +101,15 @@ class AnimationClip:
             self.mirrored,
             self.anchor,
             self.effect,
+            self.phase,
         )
+
+
+@dataclass(frozen=True, slots=True)
+class AnimationProgram:
+    """An authored action split into optional enter, body and exit clips."""
+
+    action: PetAction
+    body: AnimationClip
+    enter: AnimationClip | None = None
+    exit: AnimationClip | None = None

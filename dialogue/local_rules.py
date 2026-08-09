@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import random
+from collections import deque
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +27,7 @@ class DialogueManager:
         self.dialogue_dir = Path(dialogue_dir)
         self._rng = rng or random.Random()
         self._cache: dict[str, dict[str, Any]] = {}
+        self._recent: deque[str] = deque(maxlen=12)
 
     def pick_for_event(self, event_type: EventType, category: str, *, personality: str) -> str | None:
         if event_type == EventType.USER_IDLE:
@@ -48,6 +50,20 @@ class DialogueManager:
     def pick_inner_voice(self, *, personality: str) -> str | None:
         return self._pick_named("inner_voice", "lines", personality)
 
+    def pick_state(self, condition: str, *, personality: str) -> str | None:
+        return self._pick_named("state", str(condition), personality)
+
+    def pick_routine(self, situation: str, *, personality: str) -> str | None:
+        return self._pick_named("routine", str(situation), personality)
+
+    def pick_relationship(self, affinity: float, *, personality: str) -> str | None:
+        try:
+            value = float(affinity)
+        except (TypeError, ValueError):
+            value = 0.0
+        tier = "close" if value >= 0.76 else ("familiar" if value >= 0.56 else "new")
+        return self._pick_named("relationship", tier, personality)
+
     def _pick_named(self, filename: str, key: str, personality: str) -> str | None:
         payload = self._load(filename)
         choices = payload.get(key, {})
@@ -56,7 +72,14 @@ class DialogueManager:
         personality = normalize_personality(personality)
         lines = choices.get(personality) or choices.get("standard") or []
         valid_lines = [line for line in lines if isinstance(line, str) and line.strip()]
-        return self._rng.choice(valid_lines) if valid_lines else None
+        if not valid_lines:
+            return None
+        fresh = [line for line in valid_lines if line not in self._recent]
+        if not fresh and self._recent:
+            fresh = [line for line in valid_lines if line != self._recent[-1]]
+        selected = self._rng.choice(fresh or valid_lines)
+        self._recent.append(selected)
+        return selected
 
     def _load(self, filename: str) -> dict[str, Any]:
         if filename not in self._cache:

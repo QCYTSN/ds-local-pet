@@ -98,7 +98,7 @@ ACTIVITY_PLANS: dict[ActivityKind, ActivityPlan] = {
     ActivityKind.OBSERVE: ActivityPlan(
         ActivityKind.OBSERVE,
         (_action(PetAction.THINKING, 2.5, 3.6),),
-        cooldown_seconds=18.0,
+        cooldown_seconds=48.0,
     ),
     ActivityKind.STROLL: ActivityPlan(
         ActivityKind.STROLL,
@@ -107,7 +107,7 @@ ACTIVITY_PLANS: dict[ActivityKind, ActivityPlan] = {
             _walk(0.9, 2.2),
             _action(PetAction.THINKING, 1.5, 2.3),
         ),
-        cooldown_seconds=32.0,
+        cooldown_seconds=78.0,
     ),
     ActivityKind.TIDY: ActivityPlan(
         ActivityKind.TIDY,
@@ -117,26 +117,26 @@ ACTIVITY_PLANS: dict[ActivityKind, ActivityPlan] = {
             _action(PetAction.SWEEPING, 2.8, 3.2),
             _action(PetAction.HAPPY, 1.05, 1.25),
         ),
-        cooldown_seconds=72.0,
+        cooldown_seconds=240.0,
     ),
     ActivityKind.DELIGHT: ActivityPlan(
         ActivityKind.DELIGHT,
         (_action(PetAction.HAPPY, 1.05, 1.35),),
-        cooldown_seconds=38.0,
+        cooldown_seconds=110.0,
     ),
     ActivityKind.NAP: ActivityPlan(
         ActivityKind.NAP,
         (
             _action(PetAction.THINKING, 1.5, 2.2),
-            _action(PetAction.SLEEPING, 26.0, 48.0),
+            _action(PetAction.SLEEPING, 32.0, 58.0),
             _action(PetAction.HAPPY, 1.05, 1.35),
         ),
-        cooldown_seconds=180.0,
+        cooldown_seconds=600.0,
     ),
     ActivityKind.MURMUR: ActivityPlan(
         ActivityKind.MURMUR,
         (ActivityCue(ActivityCueType.SPEAK, duration_range=(4.0, 5.2)),),
-        cooldown_seconds=52.0,
+        cooldown_seconds=420.0,
     ),
     ActivityKind.WITHDRAW: ActivityPlan(
         ActivityKind.WITHDRAW,
@@ -145,7 +145,7 @@ ACTIVITY_PLANS: dict[ActivityKind, ActivityPlan] = {
             _walk(0.8, 1.5, away_from_cursor=True),
             _action(PetAction.THINKING, 1.5, 2.2),
         ),
-        cooldown_seconds=58.0,
+        cooldown_seconds=180.0,
     ),
 }
 
@@ -159,12 +159,14 @@ class ActivityDirector:
         self,
         rng: random.Random | None = None,
         *,
-        initial_delay_range: tuple[float, float] = (2.5, 6.0),
-        decision_delay_range: tuple[float, float] = (3.0, 7.0),
+        initial_delay_range: tuple[float, float] = (12.0, 28.0),
+        decision_delay_range: tuple[float, float] = (42.0, 105.0),
+        activity_level: str = "balanced",
     ) -> None:
         self.rng = rng or random.Random()
         self.initial_delay_range = initial_delay_range
         self.decision_delay_range = decision_delay_range
+        self.activity_level = self._normalized_activity_level(activity_level)
         self.context = ActivityContext()
         self._current_plan: ActivityPlan | None = None
         self._cue_index = 0
@@ -174,6 +176,18 @@ class ActivityDirector:
         self._next_decision_at: float | None = None
         self._cooldown_until: dict[ActivityKind, float] = {}
         self._recent: deque[ActivityKind] = deque(maxlen=6)
+
+    @staticmethod
+    def _normalized_activity_level(value: object) -> str:
+        value = str(value or "balanced").lower()
+        return value if value in {"calm", "balanced", "lively"} else "balanced"
+
+    def set_activity_level(self, value: object, *, now: float | None = None) -> None:
+        """Change pacing without discarding cooldowns or recent-memory."""
+
+        self.activity_level = self._normalized_activity_level(value)
+        if now is not None and not self.active:
+            self._schedule_next(now)
 
     @property
     def active(self) -> bool:
@@ -366,7 +380,7 @@ class ActivityDirector:
     def interrupt(self, *, now: float, delay_seconds: float | None = None) -> ActivityKind | None:
         interrupted = self.current_activity
         self._clear_current()
-        delay = self.rng.uniform(3.0, 6.0) if delay_seconds is None else max(0.0, delay_seconds)
+        delay = self.rng.uniform(10.0, 18.0) if delay_seconds is None else max(0.0, delay_seconds)
         self._next_decision_at = now + delay
         return interrupted
 
@@ -411,11 +425,15 @@ class ActivityDirector:
 
     def _schedule_next(self, now: float) -> None:
         minimum, maximum = self.decision_delay_range
-        factor = 1.0
+        factor = {
+            "calm": 1.65,
+            "balanced": 1.0,
+            "lively": 0.68,
+        }[self.activity_level]
         if self.context.category in self.quiet_categories:
-            factor *= 1.35
+            factor *= 1.55
         if self.context.user_idle:
-            factor *= 1.25
+            factor *= 1.35
         self._next_decision_at = now + self.rng.uniform(minimum, maximum) * factor
 
     def _clear_current(self) -> None:
@@ -424,3 +442,59 @@ class ActivityDirector:
         self._cue_emitted = False
         self._cue_deadline = 0.0
         self._walk_seen = False
+
+
+class MicroMotionDirector:
+    """Schedule tiny readable gestures independently from full activities."""
+
+    _delay_ranges = {
+        "calm": (10.0, 19.0),
+        "balanced": (6.0, 14.0),
+        "lively": (4.0, 10.0),
+    }
+
+    def __init__(
+        self,
+        rng: random.Random | None = None,
+        *,
+        activity_level: str = "balanced",
+    ) -> None:
+        self.rng = rng or random.Random()
+        self.activity_level = ActivityDirector._normalized_activity_level(activity_level)
+        self._next_at: float | None = None
+
+    def set_activity_level(self, value: object, *, now: float | None = None) -> None:
+        self.activity_level = ActivityDirector._normalized_activity_level(value)
+        if now is not None:
+            self.defer(now, minimum_seconds=2.5)
+
+    def defer(self, now: float, *, minimum_seconds: float = 1.5) -> None:
+        minimum, maximum = self._delay_ranges[self.activity_level]
+        self._next_at = now + max(minimum_seconds, self.rng.uniform(minimum, maximum))
+
+    def update(
+        self,
+        *,
+        now: float,
+        state: PetState,
+        can_start: bool,
+        reduced_motion: bool,
+    ) -> PetAction | None:
+        if self._next_at is None:
+            self._next_at = now + self.rng.uniform(2.0, 5.0)
+            return None
+        if not can_start or now < self._next_at:
+            return None
+
+        glance_weight = 0.20 + state.boredom * 0.34 + state.affinity * 0.08
+        if state.energy < 0.32:
+            glance_weight *= 0.42
+        if state.annoyance > 0.32:
+            glance_weight *= 1.18
+        if reduced_motion:
+            glance_weight = 0.0
+        action = PetAction.GLANCE if self.rng.random() < glance_weight else PetAction.BLINK
+        minimum, maximum = self._delay_ranges[self.activity_level]
+        delay = self.rng.uniform(minimum, maximum) * (1.7 if reduced_motion else 1.0)
+        self._next_at = now + delay
+        return action

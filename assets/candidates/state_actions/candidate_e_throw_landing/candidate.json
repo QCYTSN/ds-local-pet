@@ -1,0 +1,30 @@
+{
+  "candidate": "candidate_e_throw_landing",
+  "source_sheet": "assets\\candidates\\state_actions\\candidate_e_throw_landing\\source_sheet.png",
+  "grid": "2x2",
+  "poses": [
+    "released_airborne",
+    "falling_v2",
+    "landing_impact",
+    "landing_recovery"
+  ],
+  "frames": [
+    "released_airborne.png",
+    "falling_v2.png",
+    "landing_impact.png",
+    "landing_recovery.png"
+  ],
+  "preview": "assets\\previews\\gifs\\state_actions_candidate_e_throw_landing_4poses.gif",
+  "prompt_file": "assets/candidates/state_actions/candidate_e_throw_landing/prompt.md",
+  "review_only": false,
+  "formal_runtime": true,
+  "approved_by_user": true,
+  "generated_at_runtime": false,
+  "notes": [
+    "Generated key-pose sheet extracted from a uniform chroma-key background.",
+    "The sheet was generated on #00FF00 and only that background was keyed to alpha.",
+    "No original asset was replaced, renamed, cropped, or reconstructed.",
+    "Visually checked against the unified front master and interaction sheet before runtime integration.",
+    "Detached prompt symbols are removed by the existing primary-component normalizer."
+  ]
+}

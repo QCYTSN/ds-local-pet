@@ -54,7 +54,7 @@ class DragRenderingTests(unittest.TestCase):
                 window.food_panel.hide()
                 window.hide()
 
-    def test_right_walking_uses_the_same_four_frames_mirrored(self) -> None:
+    def test_left_and_right_walking_use_independent_four_frame_art(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             paths = AppPaths(app_dir=Path(folder), bundle_dir=Path(__file__).resolve().parents[1])
             window = PetWindow(paths, ConfigManager(paths.config_path))
@@ -63,16 +63,19 @@ class DragRenderingTests(unittest.TestCase):
                 window.awareness_timer.stop()
                 window._set_direction("left")
                 window._request_action(PetAction.WALKING, reason="test", force=True)
-                window.player.tick(0.2)
+                window.player.tick(0.30)
                 self.assertIsNotNone(window.player.clip)
                 self.assertEqual(len(window.player.clip.frames), 4)
+                self.assertEqual(window.player.clip.asset_id, "walk_side")
                 self.assertFalse(window.player.snapshot().current.mirrored)
 
                 window._set_direction("right")
                 window.player.tick(0.2)
                 snapshot = window.player.snapshot()
                 self.assertIsNotNone(snapshot.current)
-                self.assertTrue(snapshot.current.mirrored)
+                self.assertEqual(len(window.player.clip.frames), 4)
+                self.assertEqual(window.player.clip.asset_id, "walk_side_right")
+                self.assertFalse(snapshot.current.mirrored)
 
                 image = QImage(window.size(), QImage.Format.Format_ARGB32_Premultiplied)
                 image.fill(0)

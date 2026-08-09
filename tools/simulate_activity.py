@@ -13,7 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from behavior.activity_director import ActivityCueType, ActivityDirector
+from behavior.activity_director import ActivityCueType, ActivityDirector, MicroMotionDirector
 from pet.state import PetState
 
 
@@ -25,11 +25,13 @@ def simulate(minutes: float, seed: int) -> dict[str, object]:
         random.Random(seed),
         initial_delay_range=(0.0, 0.0),
     )
+    micro_director = MicroMotionDirector(random.Random(seed + 101))
     state = PetState()
     walk_until = -1.0
     completed: Counter[str] = Counter()
     occupancy: Counter[str] = Counter()
     sequence: list[str] = []
+    micro_motions: Counter[str] = Counter()
 
     for index in range(total_ticks):
         now = index * step
@@ -52,15 +54,21 @@ def simulate(minutes: float, seed: int) -> dict[str, object]:
             is_walking=is_walking,
             allow_movement=True,
         )
-        if command is None:
-            continue
-        if command.cue_type == ActivityCueType.WALK:
+        if command is not None and command.cue_type == ActivityCueType.WALK:
             walk_until = now + max(1.0, command.distance_body_widths * 1.6)
-        elif command.cue_type == ActivityCueType.COMPLETE:
+        elif command is not None and command.cue_type == ActivityCueType.COMPLETE:
             name = command.activity.value
             completed[name] += 1
             sequence.append(name)
             state.finish_activity(name)
+        micro_action = micro_director.update(
+            now=now,
+            state=state,
+            can_start=not director.active and not is_walking,
+            reduced_motion=False,
+        )
+        if micro_action is not None:
+            micro_motions[micro_action.value.lower()] += 1
 
     repeated_neighbors = sum(
         left == right for left, right in zip(sequence, sequence[1:])
@@ -74,6 +82,7 @@ def simulate(minutes: float, seed: int) -> dict[str, object]:
         "seed": seed,
         "completed_activities": sum(completed.values()),
         "activity_counts": dict(sorted(completed.items())),
+        "micro_motion_counts": dict(sorted(micro_motions.items())),
         "occupancy_percent": occupancy_percent,
         "consecutive_repeats": repeated_neighbors,
         "final_state": {

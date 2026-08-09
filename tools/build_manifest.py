@@ -83,8 +83,9 @@ def action(
     anchor_type: str = "ground",
     quality: str = "formal_unified_generated_action",
     requires_real_frames: bool = False,
+    transition: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    return {
+    entry = {
         "id": action_id,
         "asset": asset,
         "loop": loop,
@@ -101,6 +102,9 @@ def action(
         "quality": quality,
         "requires_real_frames": requires_real_frames,
     }
+    if transition:
+        entry["transition"] = transition
+    return entry
 
 
 def _asset_quality(runtime_assets: dict[str, Any], asset_id: str, fallback: str) -> str:
@@ -111,7 +115,31 @@ def _asset_quality(runtime_assets: dict[str, Any], asset_id: str, fallback: str)
 def actions_manifest(runtime_assets: dict[str, Any]) -> dict[str, Any]:
     quality = lambda asset, fallback="formal_unified_generated_action": _asset_quality(runtime_assets, asset, fallback)
     actions = [
-        action("IDLE", "idle_front", "breath", None, 10, loop=True, quality=quality("idle_front", "clean_base_view")),
+        action(
+            "IDLE",
+            "idle_front",
+            "breath",
+            None,
+            10,
+            loop=True,
+            quality=quality("idle_front", "formal_unified_generated_idle_base"),
+        ),
+        action(
+            "BLINK",
+            "idle_blink",
+            "micro_idle",
+            560,
+            12,
+            quality=quality("idle_blink", "formal_unified_generated_micro_frames"),
+        ),
+        action(
+            "GLANCE",
+            "idle_glance",
+            "micro_idle",
+            1260,
+            12,
+            quality=quality("idle_glance", "formal_unified_generated_micro_frames"),
+        ),
         action("THINKING", "idle_think", "think", 2400, 20, quality=quality("idle_think")),
         action(
             "WALKING",
@@ -121,11 +149,33 @@ def actions_manifest(runtime_assets: dict[str, Any]) -> dict[str, Any]:
             30,
             loop=True,
             quality=quality("walk_side", "formal_unified_generated_walk_frames"),
+            transition={
+                "enter": {
+                    "asset": "walk_start_left",
+                    "duration_ms": 260,
+                    "effect": "walk_start",
+                },
+                "exit": {
+                    "asset": "walk_stop_left",
+                    "duration_ms": 300,
+                    "effect": "walk_stop",
+                },
+            },
         ),
         action("HAPPY", "happy", "bounce", 1050, 60, quality=quality("happy")),
+        action(
+            "HEAD_PAT",
+            "head_pat",
+            "head_pat",
+            1200,
+            68,
+            interruptible=False,
+            quality=quality("head_pat", "formal_unified_generated_interaction_frames"),
+        ),
         action("TALKING", "talk", "talk", 2900, 45, quality=quality("talk")),
         action("ANGRY", "angry", "angry", 1500, 70, interruptible=False, quality=quality("angry")),
-        action("POKE_REACT", "poke_react", "recoil", 430, 80, interruptible=False, quality=quality("poke_react")),
+        action("POKE_REACT", "poke_react", "poke_frames", 760, 80, interruptible=False, quality=quality("poke_react")),
+        action("TAIL_REACT", "tail_react", "tail_react", 980, 82, interruptible=False, quality=quality("tail_react")),
         action("EATING", "eat", "eat", 1500, 65, interruptible=False, quality=quality("eat")),
         action("SWEEPING", "sweep", "sweep", 2800, 25, quality=quality("sweep")),
         action(
@@ -138,6 +188,18 @@ def actions_manifest(runtime_assets: dict[str, Any]) -> dict[str, Any]:
             interruptible=True,
             anchor_type="sleep",
             quality=quality("sleep"),
+            transition={
+                "enter": {
+                    "asset": "sleep_enter",
+                    "duration_ms": 1050,
+                    "effect": "sleep_enter",
+                },
+                "exit": {
+                    "asset": "sleep_wake",
+                    "duration_ms": 900,
+                    "effect": "sleep_wake",
+                },
+            },
         ),
         action(
             "DRAGGING",
@@ -154,11 +216,29 @@ def actions_manifest(runtime_assets: dict[str, Any]) -> dict[str, Any]:
             "FALLING",
             "falling",
             "fall",
-            900,
+            None,
             90,
+            loop=True,
             interruptible=False,
             anchor_type="drag",
             quality=quality("falling"),
+            transition={
+                "enter": {
+                    "asset": "released_airborne",
+                    "duration_ms": 140,
+                    "effect": "fall",
+                }
+            },
+        ),
+        action(
+            "LANDING",
+            "landing",
+            "landing",
+            620,
+            85,
+            interruptible=False,
+            anchor_type="ground",
+            quality=quality("landing", "formal_unified_generated_landing_frames"),
         ),
         action(
             "DIZZY",
@@ -172,20 +252,31 @@ def actions_manifest(runtime_assets: dict[str, Any]) -> dict[str, Any]:
         ),
     ]
     return {
-        "format_version": 2,
+        "format_version": 4,
         "character_id": "dafeiyu",
         "assets": runtime_assets,
         "actions": {entry["id"]: entry for entry in actions},
         "fallbacks": {
+            "idle_blink": "idle_front",
+            "idle_glance": "idle_front",
+            "head_pat": "happy",
             "walk_side": "idle_front",
+            "walk_side_right": "walk_side",
+            "walk_start_left": "walk_side_stand",
+            "walk_start_right": "walk_side_stand",
+            "walk_stop_left": "walk_side_stand",
+            "walk_stop_right": "walk_side_stand",
             "talk": "idle_front",
             "sleep": "idle_front",
             "dragging": "idle_front",
+            "released_airborne": "falling",
+            "landing": "dizzy",
             "dizzy": "idle_front",
+            "tail_react": "poke_react",
         },
         "notes": [
             "所有运行时动作均来自同一套统一角色母版；运行时不生成图片。",
-            "WALKING 是已接入的四帧侧视循环，而非程序化滑行 placeholder。",
+            "WALKING 使用独立左右四帧循环与起步/刹停过渡，而非镜像滑行 placeholder。",
             "用户提供的付费状态图仅作为动作语义参考，不混入最终显示图集。",
         ],
     }
@@ -218,22 +309,28 @@ def write_architecture_doc(output: Path) -> None:
 
 ## 目标
 
-动画、素材选择、状态转换和窗口移动分离。运行时只加载预生成 PNG 与 PySide6 `QPixmap`，不运行图像模型、不截图、不访问网络。
+动画、素材选择、状态转换和窗口移动分离。动作系统只加载预生成 PNG 与 PySide6 `QPixmap`，不运行图像模型、不截图；联网仅由独立、可关闭的版本检查器负责。
 
 ## 模块
 
 - `animation.asset_registry`：读取 `actions.json`，按桌宠尺寸缓存 `QPixmap`。
-- `animation.clip`：定义 clip、frame、锚点与动作请求的数据结构。
-- `animation.player`：推进帧时间、处理交叉淡化，输出当前与上一张精灵图。
+- `animation.clip`：定义 clip、frame、锚点，以及 enter/body/exit 动作协议。
+- `animation.player`：推进动作分段与帧时间、处理安全的同素材淡化，输出当前精灵图。
 - `animation.effects`：参数化轻微呼吸、思考摇摆、真实行走帧播放、反冲、弹跳、进食、眩晕等效果。
 - `animation.state_machine`：处理动作优先级、中断、有限动作超时返回与拖拽强制中断。
 - `animation.transitions`：封装不闪烁的交叉淡化。
+- `pet.physics`：独立处理抛掷速度、重力、屏幕/窗口表面碰撞、反弹、摩擦与落地判定。
+- `pet.surfaces`：只读取窗口矩形，管理窗口顶部平台、落脚附着、窗口随动和表面行走边界。
 
 ## 状态
 
-`IDLE`、`THINKING`、`WALKING`、`HAPPY`、`TALKING`、`ANGRY`、`POKE_REACT`、`EATING`、`SWEEPING`、`SLEEPING`、`DRAGGING`、`FALLING`、`DIZZY`。
+`IDLE`、`BLINK`、`GLANCE`、`THINKING`、`WALKING`、`HAPPY`、`HEAD_PAT`、`TALKING`、`ANGRY`、`POKE_REACT`、`TAIL_REACT`、`EATING`、`SWEEPING`、`SLEEPING`、`DRAGGING`、`FALLING`、`LANDING`、`DIZZY`。
 
-`WALKING` 现为正式四帧侧面循环。它通过四张独立的接地/经过/反向接地/抬步帧在 8 FPS 左右循环，向右时由运行时镜像；程序化效果只做极轻微的重心补充，不再把整张侧面立绘平移冒充走路。
+`WALKING` 现为正式左右双套四帧侧面循环。每个方向都有接地/经过/反向接地/抬步帧，并在进入和退出时播放独立起步、刹停过渡；右向不再镜像左向，蝴蝶结、围裙图案和发饰保持解剖位置。
+
+`BLINK`、`GLANCE` 由独立微动作调度器触发，不计作一次完整活动；`HEAD_PAT` 与 `POKE_REACT` 使用连续实帧表达互动过程。完整活动默认间隔显著拉长，主动说话另有长冷却，避免桌宠常驻时显得忙乱。
+
+自动散步只改变水平坐标并保持当前表面脚底基线。拖拽释放后才转交给 `ThrowPhysics` 改变纵向坐标；轻落地播放压身恢复，重摔在落地动作后进入眩晕。普通窗口顶部会作为单向水平平台接住从上方落下的角色；落脚后按相对位置随窗口移动，窗口消失时重新交给重力。快速横甩会在工作区边缘减速反弹，速度和单帧积分均有限制。
 
 ## 锚点
 
@@ -248,9 +345,9 @@ def write_walk_request(output: Path) -> None:
     output.write_text(
         """# 侧面走路素材状态
 
-当前已接入正式四帧侧视走路循环，来源为用户认可的统一绿幕角色图集：`assets/candidates/walk_side/candidate_a/`。运行时文件位于 `assets/processed/runtime/states/walk_side/`，8 FPS 预览位于 `assets/previews/gifs/walk_side_candidate_a_8fps.gif`。
+当前已接入左右独立的正式四帧侧视走路循环。左向来源为 `assets/candidates/walk_side/candidate_a/`，右向与起停过渡位于 `assets/candidates/state_actions/candidate_g_motion2/`。运行时文件位于 `assets/processed/runtime/states/walk_side*`。
 
-四帧分别覆盖接地、经过、反向接地和抬步；所有帧在归一化时共享画布、比例和脚底基线。左向使用原始左向帧，右向由运行时镜像。后续若请画师精修，应保持这一组的角色身份和四帧节奏，不是当前版本的阻塞项。
+四帧分别覆盖接地、经过、反向接地和抬步；所有帧在归一化时共享画布、比例和脚底基线。左右向各自保留固定配饰位置，并通过两帧起步与两帧刹停动作衔接待机。
 """,
         encoding="utf-8",
     )
