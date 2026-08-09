@@ -23,15 +23,49 @@ class PetState:
     total_feedings: int = 0
     last_saved_at: float = 0.0
 
-    def advance(self, seconds: float) -> None:
+    def advance(self, seconds: float, *, activity: str = "idle") -> None:
         if seconds <= 0:
             return
-        hours = min(seconds / 3600.0, 24.0)
-        self.energy = _clamp(self.energy - hours * 0.025)
-        self.boredom = _clamp(self.boredom + hours * 0.045)
+        bounded_seconds = min(seconds, 24.0 * 3600.0)
+        hours = bounded_seconds / 3600.0
+        activity = str(activity or "idle").lower()
+
+        if activity == "sleeping":
+            # Naps use a compressed desktop-pet rhythm: a visible 30-50 second
+            # sleep should restore enough energy to have a readable purpose.
+            self.energy = _clamp(self.energy + bounded_seconds * 0.0016)
+            self.boredom = _clamp(self.boredom - bounded_seconds * 0.00025)
+        else:
+            energy_cost = 0.025
+            if activity == "walking":
+                energy_cost += 0.035
+            elif activity == "sweeping":
+                energy_cost += 0.050
+            self.energy = _clamp(self.energy - hours * energy_cost)
+            boredom_rate = 0.10 if activity == "idle" else (0.06 if activity == "thinking" else 0.02)
+            self.boredom = _clamp(self.boredom + hours * boredom_rate)
         self.annoyance = _clamp(self.annoyance - hours * 0.035)
         self.dizziness = _clamp(self.dizziness - hours * 0.12)
         self.mood = _clamp(self.mood + (self.affinity - 0.5) * hours * 0.01)
+
+    def finish_activity(self, activity: str) -> None:
+        """Apply the small, legible payoff of a completed autonomous activity."""
+
+        activity = str(activity).lower()
+        effects = {
+            "observe": (0.0, -0.0003, 0.0, 0.0),
+            "stroll": (-0.0020, -0.0012, 0.0003, 0.0),
+            "tidy": (-0.0030, -0.0020, 0.0007, 0.0),
+            "delight": (0.0, -0.0005, 0.0020, 0.0),
+            "nap": (0.0100, -0.0008, 0.0005, -0.015),
+            "murmur": (0.0, -0.0003, 0.0002, 0.0),
+            "withdraw": (-0.0020, -0.0010, -0.0005, -0.040),
+        }
+        energy, boredom, mood, annoyance = effects.get(activity, (0.0, 0.0, 0.0, 0.0))
+        self.energy = _clamp(self.energy + energy)
+        self.boredom = _clamp(self.boredom + boredom)
+        self.mood = _clamp(self.mood + mood)
+        self.annoyance = _clamp(self.annoyance + annoyance)
 
     def feed(self) -> None:
         self.energy = _clamp(self.energy + 0.12)

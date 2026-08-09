@@ -12,11 +12,18 @@ class MovementController:
 
     modes = {"wander", "follow", "still"}
 
-    # A four-frame chibi gait needs room to read.  At the old 380 px/s default,
-    # one full step covered more than a body width and looked like fast-forward.
-    def __init__(self, mode: str = "wander", speed: float = 180.0) -> None:
+    # A four-frame chibi gait needs room to read. Short, intentional walks at
+    # this speed read as steps instead of a sprite being translated by code.
+    def __init__(
+        self,
+        mode: str = "wander",
+        speed: float = 132.0,
+        *,
+        rng: random.Random | None = None,
+    ) -> None:
         self.mode = mode if mode in self.modes else "wander"
         self.speed = speed
+        self.rng = rng or random.Random()
         self.target: tuple[float, float] | None = None
         self.rest_until = 0.0
         self.current_speed = 0.0
@@ -29,6 +36,9 @@ class MovementController:
 
     def set_mode(self, mode: str) -> None:
         self.mode = mode if mode in self.modes else "wander"
+        self.cancel_target()
+
+    def cancel_target(self) -> None:
         self.target = None
         self.current_speed = 0.0
 
@@ -41,9 +51,70 @@ class MovementController:
 
     def rest_after_drag(self, now: float | None = None) -> None:
         now = time.monotonic() if now is None else now
-        self.target = None
-        self.current_speed = 0.0
-        self.rest_until = now + random.uniform(6.0, 14.0)
+        self.cancel_target()
+        self.rest_until = now + self.rng.uniform(6.0, 14.0)
+
+    def request_short_wander(
+        self,
+        widget: QWidget,
+        *,
+        body_widths: float,
+        now: float,
+        away_from_cursor: bool = False,
+    ) -> bool:
+        """Schedule one nearby walk chosen by the activity director."""
+
+        if self.mode != "wander" or self.target is not None or now < self.rest_until:
+            return False
+        screen = widget.screen() or QApplication.primaryScreen()
+        if screen is None:
+            return False
+        geometry = screen.availableGeometry()
+        left = geometry.left() + 20
+        top = geometry.top() + 20
+        right = max(left, geometry.right() - widget.width() - 20)
+        bottom = max(top, geometry.bottom() - widget.height() - 20)
+
+        body_width = max(80.0, min(widget.width() * 0.82, widget.height() * 0.72))
+        distance = body_width * max(0.55, min(2.5, float(body_widths)))
+        center_x = widget.x() + widget.width() / 2.0
+        center_y = widget.y() + widget.height() / 2.0
+        cursor = widget.cursor().pos()
+        if away_from_cursor:
+            preferred_sign = -1.0 if cursor.x() >= center_x else 1.0
+        else:
+            preferred_sign = self.rng.choice((-1.0, 1.0))
+
+        candidates: list[tuple[float, float, float]] = []
+        for sign in (preferred_sign, -preferred_sign):
+            for _ in range(4):
+                horizontal = sign * distance * self.rng.uniform(0.82, 1.0)
+                vertical = distance * self.rng.uniform(-0.26, 0.26)
+                target_x = max(left, min(right, widget.x() + horizontal))
+                target_y = max(top, min(bottom, widget.y() + vertical))
+                moved = ((target_x - widget.x()) ** 2 + (target_y - widget.y()) ** 2) ** 0.5
+                target_cursor_distance = (
+                    (target_x + widget.width() / 2.0 - cursor.x()) ** 2
+                    + (target_y + widget.height() / 2.0 - cursor.y()) ** 2
+                ) ** 0.5
+                score = moved
+                if away_from_cursor:
+                    current_cursor_distance = (
+                        (center_x - cursor.x()) ** 2 + (center_y - cursor.y()) ** 2
+                    ) ** 0.5
+                    score += (target_cursor_distance - current_cursor_distance) * 1.8
+                elif target_cursor_distance < 140.0:
+                    score -= 120.0
+                candidates.append((score, target_x, target_y))
+
+        if not candidates:
+            return False
+        _, target_x, target_y = max(candidates, key=lambda candidate: candidate[0])
+        actual_distance = ((target_x - widget.x()) ** 2 + (target_y - widget.y()) ** 2) ** 0.5
+        if actual_distance < 28.0:
+            return False
+        self.target = (target_x, target_y)
+        return True
 
     def update(
         self,
@@ -56,7 +127,9 @@ class MovementController:
         if self.mode == "follow":
             self._set_follow_target(widget)
         elif self.mode == "wander":
-            self._set_wander_target(widget, now)
+            # Wander targets now come from ActivityDirector. This keeps movement
+            # short and purposeful instead of selecting any point on the screen.
+            pass
         else:
             self.target = None
             self.current_speed = 0.0
@@ -73,7 +146,7 @@ class MovementController:
         if distance < 8.0:
             self.target = None
             self.current_speed = 0.0
-            self.rest_until = now + random.uniform(8.0, 18.0)
+            self.rest_until = now + self.rng.uniform(3.0, 7.0)
             set_direction("down", None)
             return False
 
@@ -107,16 +180,3 @@ class MovementController:
         target_x = max(geometry.left(), min(max_x, cursor.x() - widget.width() / 2))
         target_y = max(geometry.top(), min(max_y, cursor.y() - 90))
         self.target = (target_x, target_y)
-
-    def _set_wander_target(self, widget: QWidget, now: float) -> None:
-        if self.target is not None or now < self.rest_until:
-            return
-        screen = widget.screen() or QApplication.primaryScreen()
-        if screen is None:
-            return
-        geometry = screen.availableGeometry()
-        left = geometry.left() + 20
-        top = geometry.top() + 20
-        right = max(left, geometry.right() - widget.width() - 20)
-        bottom = max(top, geometry.bottom() - widget.height() - 20)
-        self.target = (random.uniform(left, right), random.uniform(top, bottom))

@@ -25,6 +25,7 @@ from animation.asset_registry import AssetRegistry
 from animation.clip import PetAction
 from animation.player import AnimationPlayer
 from animation.state_machine import ActionStateMachine
+from behavior.activity_director import ActivityCommand, ActivityCueType, ActivityDirector
 from behavior.behavior_engine import BehaviorEngine
 from behavior.classifier import AppClassifier
 from behavior.cooldown import Cooldown
@@ -85,14 +86,13 @@ class PetWindow(QWidget):
         self.player = AnimationPlayer()
         self._resize_window()
 
-        self.movement = MovementController(config.get("mode", "wander"))
+        self.movement = MovementController(config.get("mode", "wander"), rng=self.rng)
         self.interaction = InteractionController()
         self.renderer = PetRenderer(BUBBLE_HEIGHT, MARGIN)
         self.bubble = Bubble()
         self._last_line = ""
         self._last_tick_at = time.monotonic()
         self._last_state_update = self._last_tick_at
-        self._last_idle_speech_at = float("-inf")
         self._drag_offset: QPoint | None = None
         self._drag_last_pos: QPoint | None = None
         self._pending_click_region = "body"
@@ -100,6 +100,7 @@ class PetWindow(QWidget):
         self.dialogue = DialogueManager(paths.assets_dir / "dialogue", self.rng)
         self.state_store = PetStateStore(paths.state_path)
         self.pet_state = self.state_store.load()
+        self.activity_director = ActivityDirector(self.rng)
 
         self._click_timer = QTimer(self)
         self._click_timer.setSingleShot(True)
@@ -239,6 +240,7 @@ class PetWindow(QWidget):
         )
 
     def _open_food_panel(self) -> None:
+        self._interrupt_activity()
         self.food_panel.popup_at(
             self.x() + self.width() / 2,
             self.y() + BUBBLE_HEIGHT,
@@ -252,6 +254,7 @@ class PetWindow(QWidget):
             action = PetAction.coerce(raw_action)
         except ValueError:
             return
+        self._interrupt_activity()
         if action == PetAction.SLEEPING:
             self.movement.rest_after_drag()
         self._request_action(action, reason="panel_preview", force=True)
@@ -271,7 +274,16 @@ class PetWindow(QWidget):
             self._sync_animation_clip()
         walking = False
         movable_actions = {PetAction.IDLE, PetAction.THINKING, PetAction.WALKING}
-        if not self.interaction.dragging and self.action_machine.current in movable_actions:
+        cue = self.activity_director.current_cue
+        activity_allows_movement = (
+            not self.activity_director.active
+            or (cue is not None and cue.kind == ActivityCueType.WALK)
+        )
+        if (
+            not self.interaction.active
+            and activity_allows_movement
+            and self.action_machine.current in movable_actions
+        ):
             walking = self.movement.update(
                 self,
                 now=now,
@@ -282,35 +294,81 @@ class PetWindow(QWidget):
             self._request_action(PetAction.WALKING, now=now, reason="movement")
         elif not self.interaction.dragging and self.action_machine.current == PetAction.WALKING:
             self._request_action(PetAction.IDLE, now=now, reason="movement_stop", force=True)
-        if not walking and not self.interaction.dragging:
-            self._maybe_idle_action(now)
+        self._tick_activity(now)
         if now - self._last_state_update >= 5.0:
-            self.pet_state.advance(now - self._last_state_update)
+            self.pet_state.advance(
+                now - self._last_state_update,
+                activity=self.action_machine.current.value.lower(),
+            )
             self._last_state_update = now
         self.update()
 
-    def _maybe_idle_action(self, now: float) -> None:
-        if self.action_machine.current != PetAction.IDLE or self.rng.random() >= 0.0015:
-            return
-        pick = self.rng.random()
-        if pick < 0.28:
-            self._request_action(PetAction.THINKING, now=now, reason="idle_thought")
-        elif pick < 0.48:
-            self._request_action(PetAction.HAPPY, now=now, reason="idle_delight")
-        elif pick < 0.65:
-            self._request_action(PetAction.SWEEPING, now=now, reason="idle_chore")
-        elif pick < 0.78 and self.pet_state.energy < 0.38:
-            self._request_action(PetAction.SLEEPING, now=now, reason="low_energy")
-        elif now - self._last_idle_speech_at >= 30.0:
-            self._last_idle_speech_at = now
-            personality = self._personality()
-            if pick < 0.90:
-                line = self.dialogue.pick_inner_voice(personality=personality)
-                self.say(line, inner=True)
-            else:
-                self.say(self.dialogue.pick_daily(personality=personality))
+    def _tick_activity(self, now: float) -> None:
+        command = self.activity_director.update(
+            now=now,
+            state=self.pet_state,
+            can_start=(
+                self.action_machine.current == PetAction.IDLE
+                and not self.interaction.active
+                and not self.movement.is_walking
+                and not self.control_panel.isVisible()
+                and not self.food_panel.isVisible()
+            ),
+            is_walking=self.movement.is_walking,
+            allow_movement=self.movement.mode == "wander",
+        )
+        if command is not None:
+            self._execute_activity_command(command, now)
 
-    def say(self, text: str | None, *, inner: bool = False) -> bool:
+    def _execute_activity_command(self, command: ActivityCommand, now: float) -> None:
+        reason = f"activity_{command.activity.value}"
+        if command.cue_type == ActivityCueType.COMPLETE:
+            self.pet_state.finish_activity(command.activity.value)
+            return
+        if command.cue_type == ActivityCueType.WALK:
+            started = self.movement.request_short_wander(
+                self,
+                body_widths=command.distance_body_widths,
+                now=now,
+                away_from_cursor=command.away_from_cursor,
+            )
+            if not started:
+                self.activity_director.skip_walk(now=now)
+            return
+        if command.cue_type == ActivityCueType.SPEAK:
+            personality = self._personality()
+            line = (
+                self.dialogue.pick_inner_voice(personality=personality)
+                if command.inner
+                else self.dialogue.pick_daily(personality=personality)
+            )
+            self.say(line, inner=command.inner, from_activity=True)
+            return
+        if command.action is None:
+            self.activity_director.interrupt(now=now)
+            return
+        changed = self._request_action(command.action, now=now, reason=reason)
+        if not changed and self.action_machine.current != command.action:
+            self.activity_director.interrupt(now=now)
+
+    def _interrupt_activity(self, *, delay_seconds: float | None = None) -> None:
+        interrupted = self.activity_director.interrupt(
+            now=time.monotonic(),
+            delay_seconds=delay_seconds,
+        )
+        self.movement.cancel_target()
+        if interrupted is not None and self.action_machine.current == PetAction.SLEEPING:
+            self._request_action(PetAction.IDLE, reason="activity_interrupted", force=True)
+
+    def say(
+        self,
+        text: str | None,
+        *,
+        inner: bool = False,
+        from_activity: bool = False,
+    ) -> bool:
+        if not from_activity:
+            self._interrupt_activity()
         if not text or text == self._last_line:
             return False
         self._last_line = text
@@ -333,6 +391,7 @@ class PetWindow(QWidget):
     def mousePressEvent(self, event) -> None:
         if event.button() != Qt.MouseButton.LeftButton:
             return
+        self._interrupt_activity()
         position = event.globalPosition().toPoint()
         self._drag_last_pos = position
         self._drag_offset = None
@@ -407,6 +466,7 @@ class PetWindow(QWidget):
             self.say(self.dialogue.pick_interaction("tap", personality=personality))
 
     def on_food(self, _food: str) -> None:
+        self._interrupt_activity()
         self.food_panel.hide()
         self.pet_state.feed()
         self._request_action(PetAction.EATING, reason="feed")
@@ -452,6 +512,12 @@ class PetWindow(QWidget):
         )
         if snapshot is None:
             return
+        self.activity_director.observe_context(
+            category=snapshot.category,
+            idle_seconds=snapshot.idle_seconds,
+            private=snapshot.is_private,
+            late_night=time.localtime().tm_hour >= 23,
+        )
         events = self.context_scheduler.observe(snapshot)
         for event in events:
             if event.type == EventType.FULLSCREEN_ENTER and awareness.get(
@@ -491,6 +557,7 @@ class PetWindow(QWidget):
     # ----- menus, tray, and persistence ----------------------------------------
 
     def contextMenuEvent(self, event) -> None:
+        self._interrupt_activity()
         self._refresh_control_panel()
         self.control_panel.popup_near_pet(self.frameGeometry())
         event.accept()
@@ -500,7 +567,7 @@ class PetWindow(QWidget):
         self.tray = QSystemTrayIcon(icon, self)
         tray_menu = QMenu()
         tray_menu.addAction("显示/隐藏", self.toggle_visible)
-        tray_menu.addAction("打开快速控制", lambda: self.control_panel.popup_at(self.pos()))
+        tray_menu.addAction("打开快速控制", self._open_control_panel_from_tray)
         tray_menu.addAction(
             "暂停/启用环境感知",
             lambda: self.set_awareness_enabled(
@@ -517,7 +584,13 @@ class PetWindow(QWidget):
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
             self.toggle_visible()
 
+    def _open_control_panel_from_tray(self) -> None:
+        self._interrupt_activity()
+        self._refresh_control_panel()
+        self.control_panel.popup_at(self.pos())
+
     def set_mode(self, mode: str) -> None:
+        self._interrupt_activity(delay_seconds=1.5)
         self.movement.set_mode(mode)
         self.config.set("mode", self.movement.mode)
         self._refresh_control_panel()

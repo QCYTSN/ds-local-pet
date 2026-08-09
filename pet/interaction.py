@@ -29,6 +29,10 @@ class InteractionController:
         self.dragging = False
         self._samples: list[tuple[float, QPoint]] = []
 
+    @property
+    def active(self) -> bool:
+        return self._press_pos is not None
+
     def press(self, position: QPoint, local_y: float, body_top: float, body_height: float) -> None:
         self._press_pos = position
         self._body_region = (

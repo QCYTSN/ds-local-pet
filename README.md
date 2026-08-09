@@ -26,6 +26,7 @@ Windows 用户可以直接从 GitHub Releases 下载，无需安装 Python。
 ## 核心特点
 
 - **四帧侧向行走**与多种角色状态 — 散步、发呆、睡觉、开心、生气、眩晕等
+- **状态驱动的自主活动** — 会观察、短途散步、扫地、休息并自然醒来，且避免连续重复
 - **鼠标互动** — 摸头、戳身体、拖拽甩开、双击投喂
 - **本地环境感知** — 可选感知前台窗口类型（编码、文档、视频等），仅读取本地元数据
 - **完全离线优先** — 所有台词和逻辑在本地运行，无需联网
@@ -91,6 +92,7 @@ py -3.11 -m venv .venv
 
 - **Desktop**：Python + PySide6 透明无边框窗口，系统托盘与 Windows 单实例
 - **Animation**：manifest 驱动状态机 + PNG 帧动画，优先级中断与自然过渡效果
+- **Behavior**：需求评分 + 连续活动计划，根据体力、无聊度、情绪、上下文和近期记忆调度
 - **Interaction**：区域命中检测 + 拖拽/抛掷物理
 - **Awareness**：Windows 前台窗口元数据，本地分类与隐私过滤
 - **Storage**：本地 JSON 配置与状态持久化
@@ -105,7 +107,7 @@ app/          启动、单实例与路径管理
 animation/    manifest、状态机、帧播放器、过渡与绘制效果
 pet/          窗口、渲染、移动、互动与生命状态
 awareness/    前台窗口、空闲、全屏和隐私过滤
-behavior/     分类、事件去抖、冷却和回应决策
+behavior/     活动导演、需求评分、分类、事件去抖与回应决策
 dialogue/     本地台词与人格调度
 assets/       运行时图集、动作 manifest、台词和预览
 settings/     紧凑控制面板与 JSON 配置
@@ -119,9 +121,10 @@ tools/        素材校验、处理、预览与性能工具
 python -m unittest discover -s tests -v
 python tools/validate_assets.py
 python tools/measure_performance.py
+python tools/simulate_activity.py --minutes 60
 ```
 
-当前测试覆盖分类、隐私、去抖、冷却、配置、生命状态、四帧走路、拖拽裁切、气泡以及控制面板展开/收起。性能报告见 [docs/PERFORMANCE_REPORT.md](docs/PERFORMANCE_REPORT.md)。
+当前测试覆盖活动序列、睡眠/醒来、防重复、长时间节奏模拟、分类、隐私、配置、生命状态、四帧走路、拖拽裁切、气泡以及控制面板展开/收起。性能报告见 [docs/PERFORMANCE_REPORT.md](docs/PERFORMANCE_REPORT.md)。
 
 ## Roadmap
 
@@ -129,8 +132,8 @@ python tools/measure_performance.py
 - [x] 四帧侧向行走
 - [x] 鼠标互动与拖拽
 - [x] 本地环境感知与隐私过滤
-- [ ] 更自然的自主行为（状态驱动、随机事件、行为调度）
-- [ ] 体力与作息系统
+- [x] 状态驱动的自主行为与连续活动调度
+- [x] 体力消耗、短时休息与自然睡醒闭环
 - [ ] 更多角色动作和随机事件
 - [ ] 声音反馈
 
